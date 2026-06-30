@@ -115,7 +115,6 @@ tr:hover td{background:var(--bg-secondary)}
         <button class="pill" data-q="thisMonth" onclick="setQuick('thisMonth')">This month</button>
         <button class="pill" data-q="lastMonth" onclick="setQuick('lastMonth')">Last month</button>
         <button class="pill" data-q="thisYear" onclick="setQuick('thisYear')">This year</button>
-        <button class="pill" data-q="lastYear" onclick="setQuick('lastYear')">Last year</button>
         <button class="pill" data-q="custom" onclick="setQuick('custom')">Custom</button>
       </div>
       <div id="custom-dates" style="display:none" class="row">
@@ -153,13 +152,9 @@ tr:hover td{background:var(--bg-secondary)}
             <button class="group-btn on" data-g="CLIENT" onclick="toggleGroup(this)">Client</button>
             <button class="group-btn on" data-g="PROJECT" onclick="toggleGroup(this)">Project</button>
             <button class="group-btn" data-g="TAG" onclick="toggleGroup(this)">Tag</button>
-            <button class="group-btn" data-g="DATE" onclick="toggleGroup(this)">Day</button>
           </div>
         </div>
         <div style="margin-left:auto;display:flex;gap:12px;align-items:center">
-          <label class="checkbox-label">
-            <input type="checkbox" id="billable-only"> Billable only
-          </label>
           <button class="btn" onclick="clearFilters()">Clear</button>
           <button class="btn btn-primary" onclick="runReport()"><i class="ti ti-chart-bar"></i> Run report</button>
         </div>
@@ -175,8 +170,7 @@ tr:hover td{background:var(--bg-secondary)}
       <div class="results-header">
         <div class="results-title" id="results-title">Results</div>
         <div class="export-group">
-          <button class="btn btn-sm" onclick="exportCSV()"><i class="ti ti-download"></i> CSV</button>
-          <button class="btn btn-sm" onclick="exportXLSX()"><i class="ti ti-file"></i> Excel</button>
+          <button class="btn btn-sm" onclick="exportXLSX()"><i class="ti ti-file"></i> Export to Excel</button>
         </div>
       </div>
       <div class="stat-row" id="stat-row"></div>
@@ -192,6 +186,8 @@ let API_KEY='', WORKSPACE_ID='', USER_ID='', allProjects=[], allClients=[], allT
 let selectedClients=new Set(), selectedProjects=new Set(), selectedTags=new Set();
 let activeGroups=new Set(['CLIENT','PROJECT']);
 let lastData=[];
+let lastRows=[];
+let dateSortDir='desc';
 
 async function clockifyFetch(url, method='GET', body=null){
   const r = await fetch('/api/proxy', {
@@ -249,9 +245,9 @@ async function loadFilters(){
   show('loading-panel');
   try{
     const [pr,cl,tg] = await Promise.all([
-      clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/projects?page-size=500`),
+      clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/projects?page-size=500&archived=false`),
       clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/clients?page-size=500`),
-      clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/tags?page-size=500`),
+      clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/tags?page-size=500&archived=false`),
     ]);
     allProjects=Array.isArray(pr)?pr:[];
     allClients=Array.isArray(cl)?cl:[];
@@ -314,7 +310,6 @@ function clearFilters(){
   renderMultiSelect('project-list',allProjects,'project',selectedProjects);
   renderMultiSelect('tag-list',allTags,'tag',selectedTags);
   renderAllTags();
-  document.getElementById('billable-only').checked=false;
   setQuick('thisWeek');
   hide('results-panel');
 }
@@ -323,6 +318,7 @@ function toggleGroup(btn){
   const g=btn.dataset.g;
   if(activeGroups.has(g))activeGroups.delete(g);else activeGroups.add(g);
   btn.classList.toggle('on');
+  if(lastRows.length) renderCurrentTable();
 }
 
 const quickRanges={
@@ -392,8 +388,6 @@ async function runReport(){
 
   try{
     const entries = await fetchAllTimeEntries(from,to);
-    console.log('RAW ENTRIES FROM CLOCKIFY:', entries);
-    if(entries.length) console.log('FIRST ENTRY DETAIL:', JSON.stringify(entries[0], null, 2));
     hide('loading-panel');
     renderResults({timeentries: normalizeEntries(entries)}, from, to);
   }catch(e){hide('loading-panel');showErr('main-error',e.message);}
@@ -404,7 +398,6 @@ async function runReport(){
 // plus this endpoint doesn't filter server-side — so we normalize the
 // shape AND apply client/project/tag/billable filters here ourselves.
 function normalizeEntries(raw){
-  const billableOnly = document.getElementById('billable-only').checked;
   return raw
     .map(e=>({
       timeInterval: e.timeInterval,
@@ -418,7 +411,6 @@ function normalizeEntries(raw){
       tags: (e.tags||[]).map(t=>({id:t.id,name:t.name})),
     }))
     .filter(e=>{
-      if(billableOnly && !e.billable) return false;
       if(selectedClients.size && !selectedClients.has(e.clientId)) return false;
       if(selectedProjects.size && !selectedProjects.has(e.projectId)) return false;
       if(selectedTags.size && !e.tags.some(t=>selectedTags.has(t.id))) return false;
@@ -430,14 +422,12 @@ function renderResults(data,from,to){
   const entries=data.timeentries||[];
   lastData=entries;
 
-  let totalSec=0,billSec=0;
-  entries.forEach(e=>{totalSec+=parseISODuration(e.timeInterval?.duration);if(e.billable)billSec+=parseISODuration(e.timeInterval?.duration);});
+  let totalSec=0;
+  entries.forEach(e=>{totalSec+=parseISODuration(e.timeInterval?.duration);});
 
   document.getElementById('results-title').textContent=`${entries.length} entries · ${from} – ${to}`;
   document.getElementById('stat-row').innerHTML=`
     <div class="stat"><div class="stat-label">Total time</div><div class="stat-value">${hms(totalSec)}</div></div>
-    <div class="stat"><div class="stat-label">Billable</div><div class="stat-value">${hms(billSec)}</div></div>
-    <div class="stat"><div class="stat-label">Non-billable</div><div class="stat-value">${hms(totalSec-billSec)}</div></div>
     <div class="stat"><div class="stat-label">Entries</div><div class="stat-value">${entries.length}</div></div>
   `;
 
@@ -450,25 +440,40 @@ function renderResults(data,from,to){
     Date:e.timeInterval?.start?.split('T')[0]||'',
     Client:e.clientName||'—',
     Project:e.projectName||'—',
+    Description:e.description||'—',
     Tags:(e.tags||[]).map(t=>t.name).join(', ')||'—',
-    Billable:e.billable?'Yes':'No',
     Duration:hms(parseISODuration(e.timeInterval?.duration)),
     'Duration (h)':((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2),
   }));
 
-  renderTable(groupRows(rows));
+  lastRows=rows;
+  renderCurrentTable();
   show('results-panel');
 }
 
+// Re-renders the table using whatever grouping + sort state is currently
+// active, without needing to re-fetch from the API.
+function renderCurrentTable(){
+  const grouped = groupRows(lastRows);
+  renderTable(grouped);
+}
+
 function groupRows(rows){
-  if(!activeGroups.size)return rows;
+  if(!activeGroups.size){
+    // Ungrouped: show individual rows, sortable by date.
+    const sorted=[...rows].sort((a,b)=>{
+      if(a.Date<b.Date)return dateSortDir==='asc'?-1:1;
+      if(a.Date>b.Date)return dateSortDir==='asc'?1:-1;
+      return 0;
+    });
+    return sorted;
+  }
   const groups={};
   rows.forEach(r=>{
     const key=[...activeGroups].map(g=>{
       if(g==='CLIENT')return r.Client;
       if(g==='PROJECT')return r.Project;
       if(g==='TAG')return r.Tags;
-      if(g==='DATE')return r.Date;
       return '';
     }).join(' · ');
     if(!groups[key])groups[key]={Group:key,_count:0,_sec:0};
@@ -483,27 +488,30 @@ function groupRows(rows){
   }));
 }
 
+function toggleDateSort(){
+  dateSortDir = dateSortDir==='asc' ? 'desc' : 'asc';
+  renderCurrentTable();
+}
+
 function renderTable(rows){
   if(!rows.length)return;
   const cols=Object.keys(rows[0]);
+  const isUngrouped = cols.includes('Date');
   document.getElementById('table-area').innerHTML=`<table>
-    <thead><tr>${cols.map(c=>`<th>${c}</th>`).join('')}</tr></thead>
+    <thead><tr>${cols.map(c=>{
+      if(c==='Date' && isUngrouped){
+        const arrow = dateSortDir==='asc' ? '↑' : '↓';
+        return `<th style="cursor:pointer;user-select:none" onclick="toggleDateSort()">Date ${arrow}</th>`;
+      }
+      return `<th>${c}</th>`;
+    }).join('')}</tr></thead>
     <tbody>${rows.map(r=>`<tr>${cols.map(c=>{
       const v=r[c]??'';
-      if(c==='Billable')return `<td><span class="badge ${v==='Yes'?'badge-bill':'badge-no'}">${v}</span></td>`;
       if(c==='Duration'||c==='Duration (h)')return `<td class="dur">${v}</td>`;
       return `<td>${v}</td>`;
     }).join('')}</tr>`).join('')}
     </tbody>
   </table>`;
-}
-
-function exportCSV(){
-  if(!lastData.length){alert('Run a report first.');return;}
-  const rows=buildExportRows();
-  const header=Object.keys(rows[0]);
-  const csv=[header.join(','),...rows.map(r=>header.map(h=>`"${String(r[h]).replace(/"/g,'""')}"`).join(','))].join('\n');
-  download(new Blob([csv],{type:'text/csv'}),'clockify-report.csv');
 }
 
 function exportXLSX(){
@@ -514,16 +522,16 @@ function exportXLSX(){
   XLSX.writeFile(wb,'clockify-report.xlsx');
 }
 
+// Export columns are deliberately in this exact order: Client, Project,
+// Description, Date, Time (decimal hours) — matching what's needed for
+// downstream use (e.g. pasting into an invoice or timesheet template).
 function buildExportRows(){
   return lastData.map(e=>({
-    Date:e.timeInterval?.start?.split('T')[0]||'',
     Client:e.clientName||'',
     Project:e.projectName||'',
-    Task:e.taskName||'',
     Description:e.description||'',
-    Tags:(e.tags||[]).map(t=>t.name).join(', '),
-    Billable:e.billable?'Yes':'No',
-    'Duration (h)':parseFloat(((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2)),
+    Date:e.timeInterval?.start?.split('T')[0]||'',
+    Time:parseFloat(((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2)),
   }));
 }
 
