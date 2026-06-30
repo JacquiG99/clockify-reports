@@ -392,6 +392,8 @@ async function runReport(){
 
   try{
     const entries = await fetchAllTimeEntries(from,to);
+    console.log('RAW ENTRIES FROM CLOCKIFY:', entries);
+    if(entries.length) console.log('FIRST ENTRY DETAIL:', JSON.stringify(entries[0], null, 2));
     hide('loading-panel');
     renderResults({timeentries: normalizeEntries(entries)}, from, to);
   }catch(e){hide('loading-panel');showErr('main-error',e.message);}
