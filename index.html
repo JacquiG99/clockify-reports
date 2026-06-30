@@ -188,7 +188,7 @@ tr:hover td{background:var(--bg-secondary)}
 </div>
 
 <script>
-let API_KEY='', WORKSPACE_ID='', allProjects=[], allClients=[], allTags=[];
+let API_KEY='', WORKSPACE_ID='', USER_ID='', allProjects=[], allClients=[], allTags=[];
 let selectedClients=new Set(), selectedProjects=new Set(), selectedTags=new Set();
 let activeGroups=new Set(['CLIENT','PROJECT']);
 let lastData=[];
@@ -218,6 +218,8 @@ async function connect(){
   showErr('connect-error','');
   show('loading-panel');
   try{
+    const me = await clockifyFetch('https://api.clockify.me/api/v1/user');
+    USER_ID = me.id;
     const ws = await clockifyFetch('https://api.clockify.me/api/v1/workspaces');
     hide('loading-panel');
     if(!ws.length){showErr('connect-error','No workspaces found.');return;}
@@ -330,6 +332,44 @@ function setQuick(q){
   }
 }
 
+// Splits a date range into <=30-day chunks. The free Clockify plan caps
+// the Reports API to ~1 month per request, so instead we use the plain
+// Time Entries API (no such cap) and pull it in monthly chunks ourselves,
+// then merge everything into one list before filtering/grouping.
+function splitIntoChunks(fromStr,toStr,maxDays=30){
+  const chunks=[];
+  let start=new Date(fromStr+'T00:00:00Z');
+  const end=new Date(toStr+'T00:00:00Z');
+  while(start<=end){
+    let chunkEnd=new Date(start);
+    chunkEnd.setUTCDate(chunkEnd.getUTCDate()+maxDays-1);
+    if(chunkEnd>end)chunkEnd=new Date(end);
+    chunks.push([day(start),day(chunkEnd)]);
+    start=new Date(chunkEnd);
+    start.setUTCDate(start.getUTCDate()+1);
+  }
+  return chunks;
+}
+
+async function fetchAllTimeEntries(from,to){
+  const chunks=splitIntoChunks(from,to,30);
+  let allEntries=[];
+  for(const [chunkFrom,chunkTo] of chunks){
+    let page=1;
+    while(true){
+      const url=`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/user/${USER_ID}/time-entries`
+        +`?start=${chunkFrom}T00:00:00Z&end=${chunkTo}T23:59:59Z`
+        +`&page-size=1000&page=${page}&hydrated=true`;
+      const pageData = await clockifyFetch(url);
+      if(!Array.isArray(pageData)||!pageData.length)break;
+      allEntries=allEntries.concat(pageData);
+      if(pageData.length<1000)break;
+      page++;
+    }
+  }
+  return allEntries;
+}
+
 async function runReport(){
   const from=document.getElementById('date-from').value;
   const to=document.getElementById('date-to').value;
@@ -337,24 +377,38 @@ async function runReport(){
   showErr('main-error','');
   show('loading-panel');hide('results-panel');
 
-  const body={
-    dateRangeStart:from+'T00:00:00.000Z',
-    dateRangeEnd:to+'T23:59:59.999Z',
-    detailedFilter:{page:1,pageSize:1000},
-  };
-  if(document.getElementById('billable-only').checked) body.billable = true;
-  if(selectedClients.size) body.clients={ids:[...selectedClients]};
-  if(selectedProjects.size) body.projects={ids:[...selectedProjects]};
-  if(selectedTags.size) body.tags={ids:[...selectedTags]};
-
   try{
-    const data = await clockifyFetch(
-      `https://reports.api.clockify.me/v1/workspaces/${WORKSPACE_ID}/reports/detailed`,
-      'POST', body
-    );
+    const entries = await fetchAllTimeEntries(from,to);
     hide('loading-panel');
-    renderResults(data,from,to);
+    renderResults({timeentries: normalizeEntries(entries)}, from, to);
   }catch(e){hide('loading-panel');showErr('main-error',e.message);}
+}
+
+// The Time Entries API shape differs slightly from the Reports API shape
+// (project/client/tag come back as nested objects, not flat name fields),
+// plus this endpoint doesn't filter server-side — so we normalize the
+// shape AND apply client/project/tag/billable filters here ourselves.
+function normalizeEntries(raw){
+  const billableOnly = document.getElementById('billable-only').checked;
+  return raw
+    .map(e=>({
+      timeInterval: e.timeInterval,
+      billable: e.billable,
+      description: e.description,
+      clientName: e.project?.clientName || '',
+      projectName: e.project?.name || '',
+      clientId: e.project?.clientId || '',
+      projectId: e.projectId || '',
+      taskName: e.task?.name || '',
+      tags: (e.tags||[]).map(t=>({id:t.id,name:t.name})),
+    }))
+    .filter(e=>{
+      if(billableOnly && !e.billable) return false;
+      if(selectedClients.size && !selectedClients.has(e.clientId)) return false;
+      if(selectedProjects.size && !selectedProjects.has(e.projectId)) return false;
+      if(selectedTags.size && !e.tags.some(t=>selectedTags.has(t.id))) return false;
+      return true;
+    });
 }
 
 function renderResults(data,from,to){
