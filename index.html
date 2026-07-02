@@ -164,6 +164,15 @@ let activeGroups=new Set(['CLIENT','PROJECT']);
 let lastData=[], lastRows=[];
 let dateSortDir='desc';
 
+// CLIENT_MODE: if the URL has ?client=jacqui-evans, the app runs in a
+// locked read-only view for that client only. They can filter by date and
+// project within their own data, but never see any other client's entries.
+const CLIENT_MODE = new URLSearchParams(window.location.search).get('client');
+
+function slugify(name){
+  return (name||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+
 // All Clockify calls go through our Netlify proxy function, which holds
 // the API key as a server-side environment variable (CLOCKIFY_API_KEY).
 // The key is never sent to the browser at any point.
@@ -217,7 +226,27 @@ async function loadFilters(){
     allProjects=Array.isArray(pr)?pr:[];
     allClients=Array.isArray(cl)?cl:[];
     allTags=Array.isArray(tg)?tg:[];
-    renderMultiSelect('client-list', allClients, 'client', selectedClients);
+    if(CLIENT_MODE){
+      // Find the matching client by slugifying their Clockify name
+      const matched = allClients.find(c=>slugify(c.name)===CLIENT_MODE);
+      if(!matched){
+        hide('loading-panel');
+        showErr('main-error',`No client matching "${CLIENT_MODE}" was found in your Clockify account.`);
+        return;
+      }
+      // Lock selection to this client only and restrict projects to theirs
+      selectedClients = new Set([matched.id]);
+      allProjects = allProjects.filter(p=>p.clientId===matched.id);
+      // Hide the client filter block and the Client group-by button
+      document.getElementById('client-filter-block').style.display='none';
+      const clientGroupBtn=document.querySelector('.group-btn[data-g="CLIENT"]');
+      if(clientGroupBtn){ clientGroupBtn.style.display='none'; activeGroups.delete('CLIENT'); clientGroupBtn.classList.remove('on'); }
+      // Update the page title to reflect whose view this is
+      document.querySelector('h1').textContent=`${matched.name} — time report`;
+      document.querySelector('.subtitle').textContent='Filtered to your projects only';
+    } else {
+      renderMultiSelect('client-list', allClients, 'client', selectedClients);
+    }
     renderMultiSelect('project-list', allProjects, 'project', selectedProjects);
     renderMultiSelect('tag-list', allTags, 'tag', selectedTags);
     setQuick('thisWeek');
@@ -269,8 +298,9 @@ function removeFilter(type, id){
 }
 
 function clearFilters(){
-  selectedClients.clear(); selectedProjects.clear(); selectedTags.clear();
-  renderMultiSelect('client-list', allClients, 'client', selectedClients);
+  if(!CLIENT_MODE) selectedClients.clear();
+  selectedProjects.clear(); selectedTags.clear();
+  if(!CLIENT_MODE) renderMultiSelect('client-list', allClients, 'client', selectedClients);
   renderMultiSelect('project-list', allProjects, 'project', selectedProjects);
   renderMultiSelect('tag-list', allTags, 'tag', selectedTags);
   renderAllTags();
