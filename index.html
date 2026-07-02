@@ -85,8 +85,8 @@ tr:hover td{background:var(--bg-secondary)}
 </head>
 <body>
 <div class="wrap">
-  <h1>Clockify reports</h1>
-  <p class="subtitle">Custom filters, cross-filtering, and CSV/Excel export</p>
+  <h1 id="page-title">Clockify reports</h1>
+  <p class="subtitle" id="page-subtitle">Custom filters, cross-filtering, and CSV/Excel export</p>
 
   <div class="card" id="setup-panel">
     <div class="section-label">Connect to Clockify</div>
@@ -97,7 +97,10 @@ tr:hover td{background:var(--bg-secondary)}
       </div>
       <button class="btn btn-primary" onclick="connect()"><i class="ti ti-plug"></i> Connect</button>
     </div>
-    <p style="font-size:11px;color:var(--text-tertiary)">Your API key is only ever sent to Clockify (via this app's own proxy) — it is not stored anywhere.</p>
+    <label class="checkbox-label" style="margin-bottom:.5rem">
+      <input type="checkbox" id="remember-key"> Remember my key on this device
+    </label>
+    <p style="font-size:11px;color:var(--text-tertiary)">Your API key is only ever sent to Clockify (via this app's own proxy). If you tick "remember", it's saved only in this browser's local storage — never sent anywhere else.</p>
     <div id="connect-error"></div>
     <div id="workspace-row" style="display:none;margin-top:.875rem">
       <div class="section-label" style="margin-bottom:.5rem">Workspace</div>
@@ -126,7 +129,7 @@ tr:hover td{background:var(--bg-secondary)}
 
       <div class="section-label" style="margin-bottom:.75rem">Filters</div>
       <div class="filters-grid">
-        <div>
+        <div id="client-filter-block">
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:4px">Clients</div>
           <div class="multi-select" id="client-list"></div>
           <div class="tag-bar" id="client-tags"></div>
@@ -189,11 +192,22 @@ let lastData=[];
 let lastRows=[];
 let dateSortDir='desc';
 
+// CLIENT MODE: if the URL has ?client=some-name, this app runs in a
+// locked-down, read-only mode for that one client. The server-side
+// CLOCKIFY_API_KEY (a Netlify environment variable) is used automatically,
+// so the key is never typed in or exposed to whoever opens this link.
+// The client filter UI is hidden and locked to just their own data.
+const urlParams = new URLSearchParams(window.location.search);
+const CLIENT_MODE = urlParams.get('client') || null;
+
 async function clockifyFetch(url, method='GET', body=null){
+  // In client mode we never send an apiKey — the proxy falls back to its
+  // own server-side env var key automatically when apiKey is omitted.
+  const keyToSend = CLIENT_MODE ? undefined : API_KEY;
   const r = await fetch('/api/proxy', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ url, method, apiKey: API_KEY, body })
+    body: JSON.stringify({ url, method, apiKey: keyToSend, body })
   });
   if(!r.ok){
     const text = await r.text();
@@ -224,6 +238,17 @@ async function connect(){
   const key=document.getElementById('api-key').value.trim();
   if(!key){showErr('connect-error','Enter your API key.');return;}
   API_KEY=key;
+  if(document.getElementById('remember-key').checked){
+    localStorage.setItem('clockify_api_key', key);
+  }else{
+    localStorage.removeItem('clockify_api_key');
+  }
+  await doConnect();
+}
+
+// Shared connect logic used both for normal (typed-key) connection and
+// for client-mode auto-connect (which uses the server-side key instead).
+async function doConnect(){
   showErr('connect-error','');
   show('loading-panel');
   try{
@@ -240,6 +265,31 @@ async function connect(){
   }catch(e){hide('loading-panel');showErr('connect-error',e.message);}
 }
 
+// On page load: if we're in client mode, skip the whole key-entry step
+// and connect automatically using the server-side key. Otherwise, check
+// if a key was previously remembered in this browser and pre-fill it.
+window.addEventListener('DOMContentLoaded', async ()=>{
+  if(CLIENT_MODE){
+    document.getElementById('setup-panel').style.display='none';
+    document.getElementById('page-title').textContent='Your project report';
+    document.getElementById('page-subtitle').textContent=`Time tracked on projects for ${CLIENT_MODE.replace(/-/g,' ')}`;
+    await doConnect();
+    return;
+  }
+  const savedKey = localStorage.getItem('clockify_api_key');
+  if(savedKey){
+    document.getElementById('api-key').value = savedKey;
+    document.getElementById('remember-key').checked = true;
+  }
+});
+
+// Converts a client's display name to a URL-safe slug, e.g.
+// "Jacqui Evans" -> "jacqui-evans". Used to match the ?client= URL param
+// against your real Clockify client names without needing a lookup table.
+function slugify(name){
+  return (name||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
+}
+
 async function loadFilters(){
   WORKSPACE_ID=document.getElementById('workspace-select').value;
   show('loading-panel');
@@ -252,7 +302,33 @@ async function loadFilters(){
     allProjects=Array.isArray(pr)?pr:[];
     allClients=Array.isArray(cl)?cl:[];
     allTags=Array.isArray(tg)?tg:[];
-    renderMultiSelect('client-list',allClients,'client',selectedClients);
+
+    if(CLIENT_MODE){
+      // Lock everything to just this one client. The client filter UI is
+      // hidden entirely so there's no way to even discover other clients
+      // exist. Project/tag filters stay available, but scoped to this
+      // client's projects only.
+      const matched = allClients.find(c=>slugify(c.name)===CLIENT_MODE);
+      if(!matched){
+        showErr('main-error',`No client matching "${CLIENT_MODE}" was found.`);
+        hide('loading-panel');
+        return;
+      }
+      selectedClients = new Set([matched.id]);
+      allProjects = allProjects.filter(p=>p.clientId===matched.id);
+      document.getElementById('client-filter-block').style.display='none';
+      // Also hide the Client grouping option in client mode — grouping by
+      // client is meaningless when there's only ever one.
+      const clientGroupBtn = document.querySelector('.group-btn[data-g="CLIENT"]');
+      if(clientGroupBtn){
+        clientGroupBtn.style.display='none';
+        activeGroups.delete('CLIENT');
+        clientGroupBtn.classList.remove('on');
+      }
+    }else{
+      renderMultiSelect('client-list',allClients,'client',selectedClients);
+    }
+
     renderMultiSelect('project-list',allProjects,'project',selectedProjects);
     renderMultiSelect('tag-list',allTags,'tag',selectedTags);
     setQuick('thisWeek');
@@ -305,8 +381,10 @@ function removeFilter(type,id){
 }
 
 function clearFilters(){
-  selectedClients.clear();selectedProjects.clear();selectedTags.clear();
-  renderMultiSelect('client-list',allClients,'client',selectedClients);
+  // In client mode, never clear the client lock — only project/tag filters.
+  if(!CLIENT_MODE) selectedClients.clear();
+  selectedProjects.clear();selectedTags.clear();
+  if(!CLIENT_MODE) renderMultiSelect('client-list',allClients,'client',selectedClients);
   renderMultiSelect('project-list',allProjects,'project',selectedProjects);
   renderMultiSelect('tag-list',allTags,'tag',selectedTags);
   renderAllTags();

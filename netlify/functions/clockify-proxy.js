@@ -18,7 +18,14 @@ exports.handler = async function (event) {
   try {
     const { url, method, apiKey, body } = JSON.parse(event.body);
 
-    if (!url || !apiKey) {
+    // If the browser didn't send a key (this happens for client-mode
+    // share links, which never see a real API key at all), fall back to
+    // the server-side key stored in Netlify's environment variables.
+    // This is what lets us share read-only links with clients without
+    // ever exposing the real key to them.
+    const effectiveApiKey = apiKey || process.env.CLOCKIFY_API_KEY;
+
+    if (!url || !effectiveApiKey) {
       return {
         statusCode: 400,
         body: JSON.stringify({ error: "Missing url or apiKey" }),
@@ -39,7 +46,7 @@ exports.handler = async function (event) {
     const clockifyResponse = await fetch(url, {
       method: method || "GET",
       headers: {
-        "X-Api-Key": apiKey,
+        "X-Api-Key": effectiveApiKey,
         "Content-Type": "application/json",
       },
       body: body ? JSON.stringify(body) : undefined,
