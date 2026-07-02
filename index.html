@@ -25,7 +25,7 @@
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;font-size:14px;color:var(--text-primary);background:var(--bg-tertiary);padding:2rem 1rem}
-.wrap{max-width:900px;margin:0 auto}
+.wrap{max-width:960px;margin:0 auto}
 h1{font-size:22px;font-weight:500;margin-bottom:.25rem}
 .subtitle{font-size:13px;color:var(--text-secondary);margin-bottom:1.5rem}
 .card{background:var(--bg-primary);border:0.5px solid var(--border-tertiary);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1.25rem}
@@ -48,7 +48,6 @@ input:focus,select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0
 .pill.active{background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
 .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
 .results-title{font-size:15px;font-weight:500}
-.export-group{display:flex;gap:6px}
 .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem}
 .stat{background:var(--bg-secondary);border-radius:var(--radius-md);padding:.875rem 1rem}
 .stat-label{font-size:11px;color:var(--text-secondary);margin-bottom:4px}
@@ -59,9 +58,6 @@ th{padding:8px 12px;text-align:left;font-size:11px;font-weight:600;color:var(--t
 td{padding:9px 12px;border-bottom:0.5px solid var(--border-tertiary)}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:var(--bg-secondary)}
-.badge{display:inline-block;padding:2px 8px;border-radius:20px;font-size:11px;font-weight:500}
-.badge-bill{background:var(--green-light);color:var(--green-dark)}
-.badge-no{background:var(--bg-secondary);color:var(--text-secondary)}
 .empty{padding:3rem;text-align:center;color:var(--text-secondary)}
 .error{background:var(--red-light);border:0.5px solid var(--red-border);border-radius:var(--radius-md);padding:.875rem 1rem;color:var(--red-text);font-size:13px;margin-top:1rem}
 .loading{padding:2rem;text-align:center;color:var(--text-secondary)}
@@ -78,40 +74,21 @@ tr:hover td{background:var(--bg-secondary)}
 .group-btn{padding:5px 10px;border:0.5px solid var(--border-secondary);border-radius:var(--radius-md);font-size:12px;cursor:pointer;background:transparent;color:var(--text-secondary);font-family:inherit}
 .group-btn.on{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:500}
 .dur{font-variant-numeric:tabular-nums;text-align:right}
-.checkbox-label{font-size:12px;color:var(--text-secondary);display:flex;align-items:center;gap:6px;cursor:pointer}
-.checkbox-label input{width:14px;height:14px}
 .footer-note{font-size:11px;color:var(--text-tertiary);margin-top:2rem;text-align:center}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1 id="page-title">Clockify reports</h1>
-  <p class="subtitle" id="page-subtitle">Custom filters, cross-filtering, and CSV/Excel export</p>
+  <h1>Clockify reports</h1>
+  <p class="subtitle">Filter, cross-filter, and export your time data</p>
 
-  <div class="card" id="setup-panel">
-    <div class="section-label">Connect to Clockify</div>
-    <div class="row" style="margin-bottom:.75rem">
-      <div class="field">
-        <label>API key</label>
-        <input type="password" id="api-key" placeholder="From Profile Settings → API" />
-      </div>
-      <button class="btn btn-primary" onclick="connect()"><i class="ti ti-plug"></i> Connect</button>
-    </div>
-    <label class="checkbox-label" style="margin-bottom:.5rem">
-      <input type="checkbox" id="remember-key"> Remember my key on this device
-    </label>
-    <p style="font-size:11px;color:var(--text-tertiary)">Your API key is only ever sent to Clockify (via this app's own proxy). If you tick "remember", it's saved only in this browser's local storage — never sent anywhere else.</p>
-    <div id="connect-error"></div>
-    <div id="workspace-row" style="display:none;margin-top:.875rem">
-      <div class="section-label" style="margin-bottom:.5rem">Workspace</div>
-      <select id="workspace-select" onchange="loadFilters()"></select>
-    </div>
-  </div>
+  <div id="loading-panel" class="loading"><span class="spin"></span> Loading your workspace...</div>
+  <div id="main-error"></div>
 
   <div id="filter-panel" style="display:none">
     <div class="card">
       <div class="section-label" style="margin-bottom:.75rem">Date range</div>
-      <div class="quick-dates" id="quick-dates">
+      <div class="quick-dates">
         <button class="pill" data-q="today" onclick="setQuick('today')">Today</button>
         <button class="pill" data-q="thisWeek" onclick="setQuick('thisWeek')">This week</button>
         <button class="pill" data-q="lastWeek" onclick="setQuick('lastWeek')">Last week</button>
@@ -157,7 +134,7 @@ tr:hover td{background:var(--bg-secondary)}
             <button class="group-btn" data-g="TAG" onclick="toggleGroup(this)">Tag</button>
           </div>
         </div>
-        <div style="margin-left:auto;display:flex;gap:12px;align-items:center">
+        <div style="margin-left:auto;display:flex;gap:8px">
           <button class="btn" onclick="clearFilters()">Clear</button>
           <button class="btn btn-primary" onclick="runReport()"><i class="ti ti-chart-bar"></i> Run report</button>
         </div>
@@ -165,53 +142,40 @@ tr:hover td{background:var(--bg-secondary)}
     </div>
   </div>
 
-  <div id="loading-panel" style="display:none" class="loading"><span class="spin"></span> Loading...</div>
-  <div id="main-error"></div>
-
   <div id="results-panel" style="display:none">
     <div class="card">
       <div class="results-header">
         <div class="results-title" id="results-title">Results</div>
-        <div class="export-group">
-          <button class="btn btn-sm" onclick="exportXLSX()"><i class="ti ti-file"></i> Export to Excel</button>
-        </div>
+        <button class="btn btn-sm" onclick="exportXLSX()"><i class="ti ti-file"></i> Export to Excel</button>
       </div>
       <div class="stat-row" id="stat-row"></div>
       <div class="table-wrap"><div id="table-area"></div></div>
     </div>
   </div>
 
-  <p class="footer-note">Built for personal use with the Clockify API · your data stays between your browser and Clockify</p>
+  <p class="footer-note">Your data is fetched live from Clockify and never stored by this app</p>
 </div>
 
 <script>
-let API_KEY='', WORKSPACE_ID='', USER_ID='', allProjects=[], allClients=[], allTags=[];
+let WORKSPACE_ID='', USER_ID='';
+let allProjects=[], allClients=[], allTags=[];
 let selectedClients=new Set(), selectedProjects=new Set(), selectedTags=new Set();
 let activeGroups=new Set(['CLIENT','PROJECT']);
-let lastData=[];
-let lastRows=[];
+let lastData=[], lastRows=[];
 let dateSortDir='desc';
 
-// CLIENT MODE: if the URL has ?client=some-name, this app runs in a
-// locked-down, read-only mode for that one client. The server-side
-// CLOCKIFY_API_KEY (a Netlify environment variable) is used automatically,
-// so the key is never typed in or exposed to whoever opens this link.
-// The client filter UI is hidden and locked to just their own data.
-const urlParams = new URLSearchParams(window.location.search);
-const CLIENT_MODE = urlParams.get('client') || null;
-
+// All Clockify calls go through our Netlify proxy function, which holds
+// the API key as a server-side environment variable (CLOCKIFY_API_KEY).
+// The key is never sent to the browser at any point.
 async function clockifyFetch(url, method='GET', body=null){
-  // In client mode we never send an apiKey — the proxy falls back to its
-  // own server-side env var key automatically when apiKey is omitted.
-  const keyToSend = CLIENT_MODE ? undefined : API_KEY;
   const r = await fetch('/api/proxy', {
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ url, method, apiKey: keyToSend, body })
+    body: JSON.stringify({ url, method, body })
   });
   if(!r.ok){
     const text = await r.text();
-    throw new Error(`Clockify API error (${r.status}): ${text}`);
+    throw new Error(`API error (${r.status}): ${text}`);
   }
   return r.json();
 }
@@ -221,78 +185,29 @@ function hms(sec){
   return h+'h '+(m<10?'0':'')+m+'m';
 }
 
-// The Time Entries API returns durations as ISO 8601 periods (e.g. "PT1H30M"),
-// not raw seconds like the Reports API does. This converts that string to seconds.
-// Returns 0 for null/undefined (e.g. a currently-running timer with no end yet).
 function parseISODuration(iso){
   if(!iso) return 0;
   const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?/);
   if(!match) return 0;
-  const hours = parseFloat(match[1]||0);
-  const minutes = parseFloat(match[2]||0);
-  const seconds = parseFloat(match[3]||0);
-  return Math.round(hours*3600 + minutes*60 + seconds);
+  return Math.round(parseFloat(match[1]||0)*3600 + parseFloat(match[2]||0)*60 + parseFloat(match[3]||0));
 }
 
-async function connect(){
-  const key=document.getElementById('api-key').value.trim();
-  if(!key){showErr('connect-error','Enter your API key.');return;}
-  API_KEY=key;
-  if(document.getElementById('remember-key').checked){
-    localStorage.setItem('clockify_api_key', key);
-  }else{
-    localStorage.removeItem('clockify_api_key');
-  }
-  await doConnect();
-}
-
-// Shared connect logic used both for normal (typed-key) connection and
-// for client-mode auto-connect (which uses the server-side key instead).
-async function doConnect(){
-  showErr('connect-error','');
-  show('loading-panel');
+// Auto-load on page open — no connect step needed.
+window.addEventListener('DOMContentLoaded', async ()=>{
   try{
     const me = await clockifyFetch('https://api.clockify.me/api/v1/user');
     USER_ID = me.id;
     const ws = await clockifyFetch('https://api.clockify.me/api/v1/workspaces');
-    hide('loading-panel');
-    if(!ws.length){showErr('connect-error','No workspaces found.');return;}
-    const sel=document.getElementById('workspace-select');
-    sel.innerHTML=ws.map(w=>`<option value="${w.id}">${w.name}</option>`).join('');
-    WORKSPACE_ID=ws[0].id;
-    show('workspace-row');
+    if(!ws.length) throw new Error('No workspaces found.');
+    WORKSPACE_ID = ws[0].id;
     await loadFilters();
-  }catch(e){hide('loading-panel');showErr('connect-error',e.message);}
-}
-
-// On page load: if we're in client mode, skip the whole key-entry step
-// and connect automatically using the server-side key. Otherwise, check
-// if a key was previously remembered in this browser and pre-fill it.
-window.addEventListener('DOMContentLoaded', async ()=>{
-  if(CLIENT_MODE){
-    document.getElementById('setup-panel').style.display='none';
-    document.getElementById('page-title').textContent='Your project report';
-    document.getElementById('page-subtitle').textContent=`Time tracked on projects for ${CLIENT_MODE.replace(/-/g,' ')}`;
-    await doConnect();
-    return;
-  }
-  const savedKey = localStorage.getItem('clockify_api_key');
-  if(savedKey){
-    document.getElementById('api-key').value = savedKey;
-    document.getElementById('remember-key').checked = true;
+  }catch(e){
+    hide('loading-panel');
+    showErr('main-error', `Could not connect to Clockify: ${e.message}. Check that CLOCKIFY_API_KEY is set in your Netlify environment variables.`);
   }
 });
 
-// Converts a client's display name to a URL-safe slug, e.g.
-// "Jacqui Evans" -> "jacqui-evans". Used to match the ?client= URL param
-// against your real Clockify client names without needing a lookup table.
-function slugify(name){
-  return (name||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-}
-
 async function loadFilters(){
-  WORKSPACE_ID=document.getElementById('workspace-select').value;
-  show('loading-panel');
   try{
     const [pr,cl,tg] = await Promise.all([
       clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/projects?page-size=500&archived=false`),
@@ -302,42 +217,19 @@ async function loadFilters(){
     allProjects=Array.isArray(pr)?pr:[];
     allClients=Array.isArray(cl)?cl:[];
     allTags=Array.isArray(tg)?tg:[];
-
-    if(CLIENT_MODE){
-      // Lock everything to just this one client. The client filter UI is
-      // hidden entirely so there's no way to even discover other clients
-      // exist. Project/tag filters stay available, but scoped to this
-      // client's projects only.
-      const matched = allClients.find(c=>slugify(c.name)===CLIENT_MODE);
-      if(!matched){
-        showErr('main-error',`No client matching "${CLIENT_MODE}" was found.`);
-        hide('loading-panel');
-        return;
-      }
-      selectedClients = new Set([matched.id]);
-      allProjects = allProjects.filter(p=>p.clientId===matched.id);
-      document.getElementById('client-filter-block').style.display='none';
-      // Also hide the Client grouping option in client mode — grouping by
-      // client is meaningless when there's only ever one.
-      const clientGroupBtn = document.querySelector('.group-btn[data-g="CLIENT"]');
-      if(clientGroupBtn){
-        clientGroupBtn.style.display='none';
-        activeGroups.delete('CLIENT');
-        clientGroupBtn.classList.remove('on');
-      }
-    }else{
-      renderMultiSelect('client-list',allClients,'client',selectedClients);
-    }
-
-    renderMultiSelect('project-list',allProjects,'project',selectedProjects);
-    renderMultiSelect('tag-list',allTags,'tag',selectedTags);
+    renderMultiSelect('client-list', allClients, 'client', selectedClients);
+    renderMultiSelect('project-list', allProjects, 'project', selectedProjects);
+    renderMultiSelect('tag-list', allTags, 'tag', selectedTags);
     setQuick('thisWeek');
     hide('loading-panel');
     show('filter-panel');
-  }catch(e){hide('loading-panel');showErr('main-error',e.message);}
+  }catch(e){
+    hide('loading-panel');
+    showErr('main-error', e.message);
+  }
 }
 
-function renderMultiSelect(elId,items,type,selSet){
+function renderMultiSelect(elId, items, type, selSet){
   const el=document.getElementById(elId);
   if(!items.length){el.innerHTML='<div class="ms-item" style="color:var(--text-secondary)">None found</div>';return;}
   el.innerHTML=items.map(i=>`
@@ -347,46 +239,40 @@ function renderMultiSelect(elId,items,type,selSet){
     </label>`).join('');
 }
 
-function toggleFilter(type,id,cb){
-  const map={client:selectedClients,project:selectedProjects,tag:selectedTags};
-  const set=map[type];
-  if(cb.checked)set.add(id);else set.delete(id);
+function toggleFilter(type, id, cb){
+  const map={client:selectedClients, project:selectedProjects, tag:selectedTags};
+  if(cb.checked) map[type].add(id); else map[type].delete(id);
   renderAllTags();
 }
 
 function renderAllTags(){
-  renderTagBar('client-tags',selectedClients,allClients,'client');
-  renderTagBar('project-tags',selectedProjects,allProjects,'project');
-  renderTagBar('tag-tags',selectedTags,allTags,'tag');
+  renderTagBar('client-tags', selectedClients, allClients, 'client');
+  renderTagBar('project-tags', selectedProjects, allProjects, 'project');
+  renderTagBar('tag-tags', selectedTags, allTags, 'tag');
 }
 
-function renderTagBar(elId,set,items,type){
-  const el=document.getElementById(elId);
-  el.innerHTML=[...set].map(id=>{
-    const item=items.find(i=>i.id===id);
-    const name=item?item.name:id;
+function renderTagBar(elId, set, items, type){
+  document.getElementById(elId).innerHTML=[...set].map(id=>{
+    const name=(items.find(i=>i.id===id)||{name:id}).name;
     return `<span class="tag">${name}<button onclick="removeFilter('${type}','${id}')">×</button></span>`;
   }).join('');
 }
 
-function removeFilter(type,id){
-  const map={client:[selectedClients,'client-list'],project:[selectedProjects,'project-list'],tag:[selectedTags,'tag-list']};
-  const [set,listId]=map[type];
+function removeFilter(type, id){
+  const map={client:[selectedClients,'client-list'], project:[selectedProjects,'project-list'], tag:[selectedTags,'tag-list']};
+  const [set, listId]=map[type];
   set.delete(id);
   renderAllTags();
-  const listEl=document.getElementById(listId);
-  listEl.querySelectorAll('input[type=checkbox]').forEach(cb=>{
-    if(cb.getAttribute('onchange').includes(`'${id}'`))cb.checked=false;
+  document.getElementById(listId).querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    if(cb.getAttribute('onchange').includes(`'${id}'`)) cb.checked=false;
   });
 }
 
 function clearFilters(){
-  // In client mode, never clear the client lock — only project/tag filters.
-  if(!CLIENT_MODE) selectedClients.clear();
-  selectedProjects.clear();selectedTags.clear();
-  if(!CLIENT_MODE) renderMultiSelect('client-list',allClients,'client',selectedClients);
-  renderMultiSelect('project-list',allProjects,'project',selectedProjects);
-  renderMultiSelect('tag-list',allTags,'tag',selectedTags);
+  selectedClients.clear(); selectedProjects.clear(); selectedTags.clear();
+  renderMultiSelect('client-list', allClients, 'client', selectedClients);
+  renderMultiSelect('project-list', allProjects, 'project', selectedProjects);
+  renderMultiSelect('tag-list', allTags, 'tag', selectedTags);
   renderAllTags();
   setQuick('thisWeek');
   hide('results-panel');
@@ -394,43 +280,35 @@ function clearFilters(){
 
 function toggleGroup(btn){
   const g=btn.dataset.g;
-  if(activeGroups.has(g))activeGroups.delete(g);else activeGroups.add(g);
+  if(activeGroups.has(g)) activeGroups.delete(g); else activeGroups.add(g);
   btn.classList.toggle('on');
   if(lastRows.length) renderCurrentTable();
 }
 
 const quickRanges={
-  today:()=>{const d=new Date();return[day(d),day(d)]},
-  thisWeek:()=>{const d=new Date(),d1=new Date(d);d1.setDate(d.getDate()-d.getDay()+1);const d7=new Date(d1);d7.setDate(d1.getDate()+6);return[day(d1),day(d7)]},
-  lastWeek:()=>{const d=new Date(),d1=new Date(d);d1.setDate(d.getDate()-d.getDay()-6);const d7=new Date(d1);d7.setDate(d1.getDate()+6);return[day(d1),day(d7)]},
-  thisMonth:()=>{const d=new Date();return[day(new Date(d.getFullYear(),d.getMonth(),1)),day(new Date(d.getFullYear(),d.getMonth()+1,0))]},
-  lastMonth:()=>{const d=new Date();return[day(new Date(d.getFullYear(),d.getMonth()-1,1)),day(new Date(d.getFullYear(),d.getMonth(),0))]},
-  thisYear:()=>{const d=new Date();return[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]},
-  lastYear:()=>{const y=new Date().getFullYear()-1;return[`${y}-01-01`,`${y}-12-31`]},
+  today:      ()=>{const d=new Date();return[day(d),day(d)]},
+  thisWeek:   ()=>{const d=new Date(),d1=new Date(d);d1.setDate(d.getDate()-d.getDay()+1);const d7=new Date(d1);d7.setDate(d1.getDate()+6);return[day(d1),day(d7)]},
+  lastWeek:   ()=>{const d=new Date(),d1=new Date(d);d1.setDate(d.getDate()-d.getDay()-6);const d7=new Date(d1);d7.setDate(d1.getDate()+6);return[day(d1),day(d7)]},
+  thisMonth:  ()=>{const d=new Date();return[day(new Date(d.getFullYear(),d.getMonth(),1)),day(new Date(d.getFullYear(),d.getMonth()+1,0))]},
+  lastMonth:  ()=>{const d=new Date();return[day(new Date(d.getFullYear(),d.getMonth()-1,1)),day(new Date(d.getFullYear(),d.getMonth(),0))]},
+  thisYear:   ()=>{const d=new Date();return[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]},
 };
 function day(d){return d.toISOString().split('T')[0]}
 
 function setQuick(q){
   document.querySelectorAll('.quick-dates .pill').forEach(p=>p.classList.toggle('active',p.dataset.q===q));
   if(q==='custom'){show('custom-dates');}
-  else{
-    hide('custom-dates');
-    if(quickRanges[q]){const[f,t]=quickRanges[q]();document.getElementById('date-from').value=f;document.getElementById('date-to').value=t;}
-  }
+  else{hide('custom-dates');if(quickRanges[q]){const[f,t]=quickRanges[q]();document.getElementById('date-from').value=f;document.getElementById('date-to').value=t;}}
 }
 
-// Splits a date range into <=30-day chunks. The free Clockify plan caps
-// the Reports API to ~1 month per request, so instead we use the plain
-// Time Entries API (no such cap) and pull it in monthly chunks ourselves,
-// then merge everything into one list before filtering/grouping.
-function splitIntoChunks(fromStr,toStr,maxDays=30){
+function splitIntoChunks(fromStr, toStr, maxDays=30){
   const chunks=[];
   let start=new Date(fromStr+'T00:00:00Z');
   const end=new Date(toStr+'T00:00:00Z');
   while(start<=end){
     let chunkEnd=new Date(start);
     chunkEnd.setUTCDate(chunkEnd.getUTCDate()+maxDays-1);
-    if(chunkEnd>end)chunkEnd=new Date(end);
+    if(chunkEnd>end) chunkEnd=new Date(end);
     chunks.push([day(start),day(chunkEnd)]);
     start=new Date(chunkEnd);
     start.setUTCDate(start.getUTCDate()+1);
@@ -438,55 +316,34 @@ function splitIntoChunks(fromStr,toStr,maxDays=30){
   return chunks;
 }
 
-async function fetchAllTimeEntries(from,to){
-  const chunks=splitIntoChunks(from,to,30);
-  let allEntries=[];
-  for(const [chunkFrom,chunkTo] of chunks){
+async function fetchAllTimeEntries(from, to){
+  const chunks=splitIntoChunks(from, to, 30);
+  let all=[];
+  for(const [f,t] of chunks){
     let page=1;
     while(true){
       const url=`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/user/${USER_ID}/time-entries`
-        +`?start=${chunkFrom}T00:00:00Z&end=${chunkTo}T23:59:59Z`
-        +`&page-size=1000&page=${page}&hydrated=true`;
-      const pageData = await clockifyFetch(url);
-      if(!Array.isArray(pageData)||!pageData.length)break;
-      allEntries=allEntries.concat(pageData);
-      if(pageData.length<1000)break;
+        +`?start=${f}T00:00:00Z&end=${t}T23:59:59Z&page-size=1000&page=${page}&hydrated=true`;
+      const data=await clockifyFetch(url);
+      if(!Array.isArray(data)||!data.length) break;
+      all=all.concat(data);
+      if(data.length<1000) break;
       page++;
     }
   }
-  return allEntries;
+  return all;
 }
 
-async function runReport(){
-  const from=document.getElementById('date-from').value;
-  const to=document.getElementById('date-to').value;
-  if(!from||!to){showErr('main-error','Select a date range.');return;}
-  showErr('main-error','');
-  show('loading-panel');hide('results-panel');
-
-  try{
-    const entries = await fetchAllTimeEntries(from,to);
-    hide('loading-panel');
-    renderResults({timeentries: normalizeEntries(entries)}, from, to);
-  }catch(e){hide('loading-panel');showErr('main-error',e.message);}
-}
-
-// The Time Entries API shape differs slightly from the Reports API shape
-// (project/client/tag come back as nested objects, not flat name fields),
-// plus this endpoint doesn't filter server-side — so we normalize the
-// shape AND apply client/project/tag/billable filters here ourselves.
 function normalizeEntries(raw){
   return raw
     .map(e=>({
-      timeInterval: e.timeInterval,
-      billable: e.billable,
-      description: e.description,
-      clientName: e.project?.clientName || '',
-      projectName: e.project?.name || '',
-      clientId: e.project?.clientId || '',
-      projectId: e.projectId || '',
-      taskName: e.task?.name || '',
-      tags: (e.tags||[]).map(t=>({id:t.id,name:t.name})),
+      timeInterval:e.timeInterval,
+      description:e.description,
+      clientName:e.project?.clientName||'',
+      projectName:e.project?.name||'',
+      clientId:e.project?.clientId||'',
+      projectId:e.projectId||'',
+      tags:(e.tags||[]).map(t=>({id:t.id,name:t.name})),
     }))
     .filter(e=>{
       if(selectedClients.size && !selectedClients.has(e.clientId)) return false;
@@ -496,10 +353,23 @@ function normalizeEntries(raw){
     });
 }
 
-function renderResults(data,from,to){
-  const entries=data.timeentries||[];
-  lastData=entries;
+async function runReport(){
+  const from=document.getElementById('date-from').value;
+  const to=document.getElementById('date-to').value;
+  if(!from||!to){showErr('main-error','Select a date range.');return;}
+  showErr('main-error','');
+  show('loading-panel');
+  hide('results-panel');
+  try{
+    const raw=await fetchAllTimeEntries(from, to);
+    const entries=normalizeEntries(raw);
+    lastData=entries;
+    hide('loading-panel');
+    renderResults(entries, from, to);
+  }catch(e){hide('loading-panel');showErr('main-error',e.message);}
+}
 
+function renderResults(entries, from, to){
   let totalSec=0;
   entries.forEach(e=>{totalSec+=parseISODuration(e.timeInterval?.duration);});
 
@@ -510,11 +380,12 @@ function renderResults(data,from,to){
   `;
 
   if(!entries.length){
-    document.getElementById('table-area').innerHTML='<div class="empty">No entries for this period and filter combination.</div>';
-    show('results-panel');return;
+    document.getElementById('table-area').innerHTML='<div class="empty">No entries found for this period and filter combination.</div>';
+    show('results-panel');
+    return;
   }
 
-  const rows=entries.map(e=>({
+  lastRows=entries.map(e=>({
     Date:e.timeInterval?.start?.split('T')[0]||'',
     Client:e.clientName||'—',
     Project:e.projectName||'—',
@@ -524,37 +395,27 @@ function renderResults(data,from,to){
     'Duration (h)':((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2),
   }));
 
-  lastRows=rows;
   renderCurrentTable();
   show('results-panel');
 }
 
-// Re-renders the table using whatever grouping + sort state is currently
-// active, without needing to re-fetch from the API.
 function renderCurrentTable(){
-  const grouped = groupRows(lastRows);
-  renderTable(grouped);
+  renderTable(groupRows(lastRows));
 }
 
 function groupRows(rows){
   if(!activeGroups.size){
-    // Ungrouped: show individual rows, sortable by date.
-    const sorted=[...rows].sort((a,b)=>{
-      if(a.Date<b.Date)return dateSortDir==='asc'?-1:1;
-      if(a.Date>b.Date)return dateSortDir==='asc'?1:-1;
-      return 0;
-    });
-    return sorted;
+    return [...rows].sort((a,b)=>dateSortDir==='asc'?a.Date.localeCompare(b.Date):b.Date.localeCompare(a.Date));
   }
   const groups={};
   rows.forEach(r=>{
     const key=[...activeGroups].map(g=>{
-      if(g==='CLIENT')return r.Client;
-      if(g==='PROJECT')return r.Project;
-      if(g==='TAG')return r.Tags;
+      if(g==='CLIENT') return r.Client;
+      if(g==='PROJECT') return r.Project;
+      if(g==='TAG') return r.Tags;
       return '';
     }).join(' · ');
-    if(!groups[key])groups[key]={Group:key,_count:0,_sec:0};
+    if(!groups[key]) groups[key]={Group:key,_count:0,_sec:0};
     groups[key]._count++;
     groups[key]._sec+=parseFloat(r['Duration (h)'])||0;
   });
@@ -567,54 +428,42 @@ function groupRows(rows){
 }
 
 function toggleDateSort(){
-  dateSortDir = dateSortDir==='asc' ? 'desc' : 'asc';
+  dateSortDir=dateSortDir==='asc'?'desc':'asc';
   renderCurrentTable();
 }
 
 function renderTable(rows){
-  if(!rows.length)return;
+  if(!rows.length) return;
   const cols=Object.keys(rows[0]);
-  const isUngrouped = cols.includes('Date');
+  const isUngrouped=cols.includes('Date');
   document.getElementById('table-area').innerHTML=`<table>
     <thead><tr>${cols.map(c=>{
-      if(c==='Date' && isUngrouped){
-        const arrow = dateSortDir==='asc' ? '↑' : '↓';
-        return `<th style="cursor:pointer;user-select:none" onclick="toggleDateSort()">Date ${arrow}</th>`;
+      if(c==='Date'&&isUngrouped){
+        return `<th style="cursor:pointer;user-select:none" onclick="toggleDateSort()">Date ${dateSortDir==='asc'?'↑':'↓'}</th>`;
       }
       return `<th>${c}</th>`;
     }).join('')}</tr></thead>
     <tbody>${rows.map(r=>`<tr>${cols.map(c=>{
       const v=r[c]??'';
-      if(c==='Duration'||c==='Duration (h)')return `<td class="dur">${v}</td>`;
+      if(c==='Duration'||c==='Duration (h)') return `<td class="dur">${v}</td>`;
       return `<td>${v}</td>`;
-    }).join('')}</tr>`).join('')}
-    </tbody>
+    }).join('')}</tr>`).join('')}</tbody>
   </table>`;
 }
 
 function exportXLSX(){
   if(!lastData.length){alert('Run a report first.');return;}
-  const ws=XLSX.utils.json_to_sheet(buildExportRows());
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Clockify');
-  XLSX.writeFile(wb,'clockify-report.xlsx');
-}
-
-// Export columns are deliberately in this exact order: Client, Project,
-// Description, Date, Time (decimal hours) — matching what's needed for
-// downstream use (e.g. pasting into an invoice or timesheet template).
-function buildExportRows(){
-  return lastData.map(e=>({
+  const rows=lastData.map(e=>({
     Client:e.clientName||'',
     Project:e.projectName||'',
     Description:e.description||'',
     Date:e.timeInterval?.start?.split('T')[0]||'',
     Time:parseFloat(((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2)),
   }));
-}
-
-function download(blob,name){
-  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+  const ws=XLSX.utils.json_to_sheet(rows);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,'Clockify');
+  XLSX.writeFile(wb,'clockify-report.xlsx');
 }
 
 function show(id){document.getElementById(id).style.display='block'}
