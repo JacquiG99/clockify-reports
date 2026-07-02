@@ -32,7 +32,6 @@ h1{font-size:22px;font-weight:500;margin-bottom:.25rem}
 .section-label{font-size:11px;font-weight:600;color:var(--text-secondary);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem}
 .row{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
 .field{display:flex;flex-direction:column;gap:6px;flex:1;min-width:140px}
-.field label{font-size:12px;color:var(--text-secondary)}
 input,select{width:100%;height:36px;padding:0 10px;border:0.5px solid var(--border-secondary);border-radius:var(--radius-md);background:var(--bg-primary);color:var(--text-primary);font-size:13px;font-family:inherit}
 input:focus,select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0 2px var(--green-light)}
 .btn{height:36px;padding:0 14px;border:0.5px solid var(--border-secondary);border-radius:var(--radius-md);background:transparent;color:var(--text-primary);font-size:13px;font-family:inherit;cursor:pointer;white-space:nowrap;display:inline-flex;align-items:center;gap:6px}
@@ -42,10 +41,6 @@ input:focus,select:focus{outline:none;border-color:var(--green);box-shadow:0 0 0
 .btn-sm{height:30px;padding:0 10px;font-size:12px}
 .divider{border:none;border-top:0.5px solid var(--border-tertiary);margin:1.25rem 0}
 .filters-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
-.quick-dates{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
-.pill{padding:4px 10px;border:0.5px solid var(--border-secondary);border-radius:20px;font-size:12px;cursor:pointer;background:transparent;color:var(--text-secondary);font-family:inherit}
-.pill:hover{background:var(--bg-secondary);color:var(--text-primary)}
-.pill.active{background:var(--green-light);border-color:var(--green);color:var(--green-dark)}
 .results-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;flex-wrap:wrap;gap:8px}
 .results-title{font-size:15px;font-weight:500}
 .stat-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px;margin-bottom:1.25rem}
@@ -75,6 +70,38 @@ tr:hover td{background:var(--bg-secondary)}
 .group-btn.on{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:500}
 .dur{font-variant-numeric:tabular-nums;text-align:right}
 .footer-note{font-size:11px;color:var(--text-tertiary);margin-top:2rem;text-align:center}
+
+/* ── Date picker ─────────────────────────────────────────────────── */
+.dp-trigger{display:flex;align-items:center;gap:10px;height:36px;padding:0 12px;border:0.5px solid var(--border-secondary);border-radius:var(--radius-md);background:var(--bg-primary);cursor:pointer;font-size:13px;color:var(--text-primary);user-select:none}
+.dp-trigger:hover{background:var(--bg-secondary)}
+.dp-trigger i{color:var(--text-secondary);font-size:16px}
+.dp-trigger .dp-label{flex:1}
+.dp-trigger .dp-arrows{display:flex;gap:2px}
+.dp-trigger .dp-arrows button{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:2px 4px;border-radius:4px;font-size:14px;line-height:1}
+.dp-trigger .dp-arrows button:hover{background:var(--bg-tertiary);color:var(--text-primary)}
+.dp-popup{position:absolute;z-index:100;background:var(--bg-primary);border:0.5px solid var(--border-secondary);border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,.15);display:none;overflow:hidden}
+.dp-popup.open{display:flex}
+.dp-presets{width:150px;border-right:0.5px solid var(--border-tertiary);padding:8px 0}
+.dp-preset{padding:8px 16px;font-size:13px;cursor:pointer;color:var(--text-primary)}
+.dp-preset:hover{background:var(--bg-secondary)}
+.dp-preset.active{background:var(--green-light);color:var(--green-dark);font-weight:500}
+.dp-cal{padding:16px}
+.dp-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.dp-cal-title{font-weight:600;font-size:14px}
+.dp-cal-nav{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:4px 8px;border-radius:var(--radius-md);font-size:16px;line-height:1}
+.dp-cal-nav:hover{background:var(--bg-secondary);color:var(--text-primary)}
+.dp-cal-nav:disabled{opacity:.3;cursor:default}
+.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.dp-dow{text-align:center;font-size:11px;font-weight:600;color:var(--text-secondary);padding:4px 0;text-transform:uppercase}
+.dp-day{text-align:center;padding:6px 4px;font-size:13px;border-radius:var(--radius-md);cursor:pointer;border:none;background:none;color:var(--text-primary);font-family:inherit;width:100%}
+.dp-day:hover:not(:disabled){background:var(--bg-secondary)}
+.dp-day.in-range{background:var(--green-light)}
+.dp-day.range-start,.dp-day.range-end{background:var(--green);color:#fff;font-weight:600}
+.dp-day.other-month{color:var(--text-tertiary)}
+.dp-day:disabled{color:var(--border-secondary);cursor:default}
+.dp-day:disabled:hover{background:none}
+.dp-footer{display:flex;justify-content:flex-end;gap:8px;padding:12px 16px;border-top:0.5px solid var(--border-tertiary)}
+.dp-wrap{position:relative;display:inline-block;width:100%}
 </style>
 </head>
 <body>
@@ -88,18 +115,32 @@ tr:hover td{background:var(--bg-secondary)}
   <div id="filter-panel" style="display:none">
     <div class="card">
       <div class="section-label" style="margin-bottom:.75rem">Date range</div>
-      <div class="quick-dates">
-        <button class="pill" data-q="today" onclick="setQuick('today')">Today</button>
-        <button class="pill" data-q="thisWeek" onclick="setQuick('thisWeek')">This week</button>
-        <button class="pill" data-q="lastWeek" onclick="setQuick('lastWeek')">Last week</button>
-        <button class="pill" data-q="thisMonth" onclick="setQuick('thisMonth')">This month</button>
-        <button class="pill" data-q="lastMonth" onclick="setQuick('lastMonth')">Last month</button>
-        <button class="pill" data-q="thisYear" onclick="setQuick('thisYear')">This year</button>
-        <button class="pill" data-q="custom" onclick="setQuick('custom')">Custom</button>
-      </div>
-      <div id="custom-dates" style="display:none" class="row">
-        <div class="field"><label>From</label><input type="date" id="date-from" /></div>
-        <div class="field"><label>To</label><input type="date" id="date-to" /></div>
+
+      <!-- Date picker trigger button -->
+      <div class="dp-wrap">
+        <div class="dp-trigger" onclick="toggleDatePicker(event)">
+          <i class="ti ti-calendar"></i>
+          <span class="dp-label" id="dp-label">This week</span>
+          <div class="dp-arrows">
+            <button onclick="shiftRange(-1,event)" title="Previous">&#8249;</button>
+            <button onclick="shiftRange(1,event)" title="Next">&#8250;</button>
+          </div>
+        </div>
+        <div class="dp-popup" id="dp-popup">
+          <div class="dp-presets" id="dp-presets"></div>
+          <div class="dp-cal">
+            <div class="dp-cal-header">
+              <button class="dp-cal-nav" id="dp-prev" onclick="calNav(-1)">&#8249;</button>
+              <span class="dp-cal-title" id="dp-cal-title"></span>
+              <button class="dp-cal-nav" id="dp-next" onclick="calNav(1)">&#8250;</button>
+            </div>
+            <div class="dp-grid" id="dp-grid"></div>
+            <div class="dp-footer">
+              <button class="btn btn-sm" onclick="closeDatePicker()">Cancel</button>
+              <button class="btn btn-sm btn-primary" onclick="applyDatePicker()">Apply</button>
+            </div>
+          </div>
+        </div>
       </div>
 
       <hr class="divider">
@@ -157,6 +198,7 @@ tr:hover td{background:var(--bg-secondary)}
 </div>
 
 <script>
+// ── State ────────────────────────────────────────────────────────────
 let WORKSPACE_ID='', USER_ID='';
 let allProjects=[], allClients=[], allTags=[];
 let selectedClients=new Set(), selectedProjects=new Set(), selectedTags=new Set();
@@ -164,61 +206,240 @@ let activeGroups=new Set(['CLIENT','PROJECT']);
 let lastData=[], lastRows=[];
 let dateSortDir='desc';
 
-// CLIENT_MODE: if the URL has ?client=jacqui-evans, the app runs in a
-// locked read-only view for that client only. They can filter by date and
-// project within their own data, but never see any other client's entries.
+const MIN_DATE = '2026-01-01';
+
+// Active date range (drives the trigger label and report fetching)
+let dateFrom = '', dateTo = '';
+
+// CLIENT_MODE: if URL has ?client=jacqui-evans, locks view to that client
 const CLIENT_MODE = new URLSearchParams(window.location.search).get('client');
+function slugify(n){return(n||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');}
 
-function slugify(name){
-  return (name||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');
-}
-
-// All Clockify calls go through our Netlify proxy function, which holds
-// the API key as a server-side environment variable (CLOCKIFY_API_KEY).
-// The key is never sent to the browser at any point.
+// ── API proxy ────────────────────────────────────────────────────────
 async function clockifyFetch(url, method='GET', body=null){
-  const r = await fetch('/api/proxy', {
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({ url, method, body })
+  const r = await fetch('/api/proxy',{
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({url,method,body})
   });
-  if(!r.ok){
-    const text = await r.text();
-    throw new Error(`API error (${r.status}): ${text}`);
-  }
+  if(!r.ok){const t=await r.text();throw new Error(`API error (${r.status}): ${t}`);}
   return r.json();
 }
 
-function hms(sec){
-  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60);
-  return h+'h '+(m<10?'0':'')+m+'m';
-}
-
+// ── Helpers ──────────────────────────────────────────────────────────
+function hms(sec){const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);return h+'h '+(m<10?'0':'')+m+'m';}
 function parseISODuration(iso){
-  if(!iso) return 0;
-  const match = iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?/);
-  if(!match) return 0;
-  return Math.round(parseFloat(match[1]||0)*3600 + parseFloat(match[2]||0)*60 + parseFloat(match[3]||0));
+  if(!iso)return 0;
+  const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?/);
+  if(!m)return 0;
+  return Math.round(parseFloat(m[1]||0)*3600+parseFloat(m[2]||0)*60+parseFloat(m[3]||0));
+}
+function isoDate(d){return d.toISOString().split('T')[0];}
+function show(id){document.getElementById(id).style.display='block';}
+function hide(id){document.getElementById(id).style.display='none';}
+function showErr(id,msg){document.getElementById(id).innerHTML=msg?`<div class="error">${msg}</div>`:'';}
+
+// ── Date picker ──────────────────────────────────────────────────────
+const PRESETS = [
+  {label:'Today',        key:'today'},
+  {label:'Yesterday',    key:'yesterday'},
+  {label:'This week',    key:'thisWeek'},
+  {label:'Last week',    key:'lastWeek'},
+  {label:'This month',   key:'thisMonth'},
+  {label:'Last month',   key:'lastMonth'},
+  {label:'This year',    key:'thisYear'},
+  {label:'Custom',       key:'custom'},
+];
+
+function presetRange(key){
+  const d=new Date(), y=d.getFullYear(), m=d.getMonth();
+  if(key==='today')      return[isoDate(d),isoDate(d)];
+  if(key==='yesterday')  {const y2=new Date(d);y2.setDate(d.getDate()-1);return[isoDate(y2),isoDate(y2)];}
+  if(key==='thisWeek')   {const s=new Date(d);s.setDate(d.getDate()-((d.getDay()+6)%7));const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];}
+  if(key==='lastWeek')   {const s=new Date(d);s.setDate(d.getDate()-((d.getDay()+6)%7)-7);const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];}
+  if(key==='thisMonth')  return[`${y}-${String(m+1).padStart(2,'0')}-01`,isoDate(new Date(y,m+1,0))];
+  if(key==='lastMonth')  {const lm=m===0?11:m-1,ly=m===0?y-1:y;return[`${ly}-${String(lm+1).padStart(2,'0')}-01`,isoDate(new Date(ly,lm+1,0))];}
+  if(key==='thisYear')   return[`${y}-01-01`,`${y}-12-31`];
+  return null;
 }
 
-// Auto-load on page open — no connect step needed.
-window.addEventListener('DOMContentLoaded', async ()=>{
-  try{
-    const me = await clockifyFetch('https://api.clockify.me/api/v1/user');
-    USER_ID = me.id;
-    const ws = await clockifyFetch('https://api.clockify.me/api/v1/workspaces');
-    if(!ws.length) throw new Error('No workspaces found.');
-    WORKSPACE_ID = ws[0].id;
-    await loadFilters();
-  }catch(e){
-    hide('loading-panel');
-    showErr('main-error', `Could not connect to Clockify: ${e.message}. Check that CLOCKIFY_API_KEY is set in your Netlify environment variables.`);
+// Clamp a date string to MIN_DATE
+function clamp(str){return str<MIN_DATE?MIN_DATE:str;}
+
+let dpOpen=false, dpActivePreset='thisWeek';
+let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
+let pickStart=null, pickEnd=null, pickPhase=0; // 0=idle,1=picking end
+
+function buildPresets(){
+  const el=document.getElementById('dp-presets');
+  el.innerHTML=PRESETS.map(p=>`<div class="dp-preset${dpActivePreset===p.key?' active':''}" onclick="selectPreset('${p.key}')">${p.label}</div>`).join('');
+}
+
+function selectPreset(key){
+  dpActivePreset=key;
+  buildPresets();
+  if(key==='custom'){
+    // Stay on calendar for manual picking
+    pickPhase=1; pickStart=dateFrom||null; pickEnd=null;
+    renderCal();
+    return;
+  }
+  const [f,t]=presetRange(key);
+  pickStart=clamp(f); pickEnd=clamp(t);
+  // Navigate calendar to the start month
+  const d=new Date(pickStart+'T00:00:00');
+  calYear=d.getFullYear(); calMonth=d.getMonth();
+  renderCal();
+}
+
+function toggleDatePicker(e){
+  e.stopPropagation();
+  const popup=document.getElementById('dp-popup');
+  dpOpen=!dpOpen;
+  popup.classList.toggle('open',dpOpen);
+  if(dpOpen){buildPresets();renderCal();}
+}
+
+function closeDatePicker(){
+  dpOpen=false;
+  document.getElementById('dp-popup').classList.remove('open');
+}
+
+function applyDatePicker(){
+  if(!pickStart||!pickEnd){alert('Please select a date range.');return;}
+  const f=pickStart<pickEnd?pickStart:pickEnd;
+  const t=pickStart<pickEnd?pickEnd:pickStart;
+  dateFrom=f; dateTo=t;
+  updateTriggerLabel();
+  closeDatePicker();
+}
+
+function updateTriggerLabel(){
+  let label;
+  if(dpActivePreset!=='custom'){
+    label=PRESETS.find(p=>p.key===dpActivePreset)?.label||'';
+  } else {
+    label=dateFrom&&dateTo?`${dateFrom} – ${dateTo}`:'Custom range';
+  }
+  document.getElementById('dp-label').textContent=label;
+}
+
+// Shift the active range by ±1 unit (same unit as current preset)
+function shiftRange(dir, e){
+  e.stopPropagation();
+  if(!dateFrom||!dateTo)return;
+  const unitMap={today:'day',yesterday:'day',thisWeek:'week',lastWeek:'week',thisMonth:'month',lastMonth:'month',thisYear:'year'};
+  const unit=unitMap[dpActivePreset]||'week';
+  let f=new Date(dateFrom+'T00:00:00'), t=new Date(dateTo+'T00:00:00');
+  if(unit==='day'){f.setDate(f.getDate()+dir);t.setDate(t.getDate()+dir);}
+  else if(unit==='week'){f.setDate(f.getDate()+dir*7);t.setDate(t.getDate()+dir*7);}
+  else if(unit==='month'){f.setMonth(f.getMonth()+dir);f.setDate(1);t=new Date(f.getFullYear(),f.getMonth()+1,0);}
+  else if(unit==='year'){f.setFullYear(f.getFullYear()+dir);f.setMonth(0);f.setDate(1);t=new Date(f.getFullYear(),11,31);}
+  if(isoDate(f)<MIN_DATE)return; // don't shift before min
+  dateFrom=isoDate(f); dateTo=isoDate(t);
+  updateTriggerLabel();
+}
+
+function calNav(dir){
+  calMonth+=dir;
+  if(calMonth>11){calMonth=0;calYear++;}
+  if(calMonth<0){calMonth=11;calYear--;}
+  renderCal();
+}
+
+function renderCal(){
+  const title=document.getElementById('dp-cal-title');
+  const grid=document.getElementById('dp-grid');
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  title.textContent=`${MONTHS[calMonth]} ${calYear}`;
+
+  // Disable prev nav if we're already at the min month
+  document.getElementById('dp-prev').disabled=(calYear===2026&&calMonth===0);
+
+  const days=['Mo','Tu','We','Th','Fr','Sa','Su'];
+  let html=days.map(d=>`<div class="dp-dow">${d}</div>`).join('');
+
+  const first=new Date(calYear,calMonth,1);
+  const startDow=(first.getDay()+6)%7; // Monday=0
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  const prevDays=new Date(calYear,calMonth,0).getDate();
+
+  // Prev month filler
+  for(let i=startDow-1;i>=0;i--){
+    html+=`<button class="dp-day other-month" disabled>${prevDays-i}</button>`;
+  }
+
+  const today=isoDate(new Date());
+  const s=pickStart, e=pickEnd;
+
+  for(let d=1;d<=daysInMonth;d++){
+    const iso=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const disabled=iso<MIN_DATE;
+    const isStart=iso===s;
+    const isEnd=iso===e;
+    const inRange=s&&e&&iso>Math.min(s,e)&&iso<Math.max(s,e);
+    const cls=['dp-day',isStart||isEnd?'range-start':'',inRange?'in-range':'',iso===today?'today':''].filter(Boolean).join(' ');
+    html+=`<button class="dp-day${isStart?' range-start':''}${isEnd?' range-end':''}${inRange?' in-range':''}${iso===today?' today':''}"
+      ${disabled?'disabled':''}
+      onclick="dayClick('${iso}')">${d}</button>`;
+  }
+
+  // Next month filler
+  const total=startDow+daysInMonth;
+  const remainder=total%7===0?0:7-(total%7);
+  for(let d=1;d<=remainder;d++){
+    html+=`<button class="dp-day other-month" disabled>${d}</button>`;
+  }
+
+  grid.innerHTML=html;
+}
+
+function dayClick(iso){
+  if(pickPhase===0||pickPhase===2){
+    // Start a new selection
+    pickStart=iso; pickEnd=null; pickPhase=1;
+    dpActivePreset='custom';
+    buildPresets();
+  } else {
+    // Complete the selection
+    pickEnd=iso;
+    if(pickEnd<pickStart){const tmp=pickStart;pickStart=pickEnd;pickEnd=tmp;}
+    pickPhase=2;
+  }
+  renderCal();
+}
+
+// Close picker if clicking outside
+document.addEventListener('click',e=>{
+  if(dpOpen&&!document.getElementById('dp-popup').contains(e.target)&&!e.target.closest('.dp-trigger')){
+    closeDatePicker();
   }
 });
 
+// ── Boot ─────────────────────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async ()=>{
+  // Set default range to this week
+  const[f,t]=presetRange('thisWeek');
+  dateFrom=clamp(f); dateTo=clamp(t);
+  pickStart=dateFrom; pickEnd=dateTo;
+  updateTriggerLabel();
+
+  try{
+    const me=await clockifyFetch('https://api.clockify.me/api/v1/user');
+    USER_ID=me.id;
+    const ws=await clockifyFetch('https://api.clockify.me/api/v1/workspaces');
+    if(!ws.length)throw new Error('No workspaces found.');
+    WORKSPACE_ID=ws[0].id;
+    await loadFilters();
+  }catch(e){
+    hide('loading-panel');
+    showErr('main-error',`Could not connect to Clockify: ${e.message}. Check that CLOCKIFY_API_KEY is set in Netlify environment variables.`);
+  }
+});
+
+// ── Filters ──────────────────────────────────────────────────────────
 async function loadFilters(){
   try{
-    const [pr,cl,tg] = await Promise.all([
+    const[pr,cl,tg]=await Promise.all([
       clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/projects?page-size=500&archived=false`),
       clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/clients?page-size=500`),
       clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/tags?page-size=500&archived=false`),
@@ -226,138 +447,104 @@ async function loadFilters(){
     allProjects=Array.isArray(pr)?pr:[];
     allClients=Array.isArray(cl)?cl:[];
     allTags=Array.isArray(tg)?tg:[];
+
     if(CLIENT_MODE){
-      // Find the matching client by slugifying their Clockify name
-      const matched = allClients.find(c=>slugify(c.name)===CLIENT_MODE);
-      if(!matched){
-        hide('loading-panel');
-        showErr('main-error',`No client matching "${CLIENT_MODE}" was found in your Clockify account.`);
-        return;
-      }
-      // Lock selection to this client only and restrict projects to theirs
-      selectedClients = new Set([matched.id]);
-      allProjects = allProjects.filter(p=>p.clientId===matched.id);
-      // Hide the client filter block and the Client group-by button
+      const matched=allClients.find(c=>slugify(c.name)===CLIENT_MODE);
+      if(!matched){hide('loading-panel');showErr('main-error',`No client matching "${CLIENT_MODE}" found.`);return;}
+      selectedClients=new Set([matched.id]);
+      allProjects=allProjects.filter(p=>p.clientId===matched.id);
       document.getElementById('client-filter-block').style.display='none';
-      const clientGroupBtn=document.querySelector('.group-btn[data-g="CLIENT"]');
-      if(clientGroupBtn){ clientGroupBtn.style.display='none'; activeGroups.delete('CLIENT'); clientGroupBtn.classList.remove('on'); }
-      // Update the page title to reflect whose view this is
+      const cb=document.querySelector('.group-btn[data-g="CLIENT"]');
+      if(cb){cb.style.display='none';activeGroups.delete('CLIENT');cb.classList.remove('on');}
       document.querySelector('h1').textContent=`${matched.name} — time report`;
       document.querySelector('.subtitle').textContent='Filtered to your projects only';
-    } else {
-      renderMultiSelect('client-list', allClients, 'client', selectedClients);
+    }else{
+      renderMultiSelect('client-list',allClients,'client',selectedClients);
     }
-    renderMultiSelect('project-list', allProjects, 'project', selectedProjects);
-    renderMultiSelect('tag-list', allTags, 'tag', selectedTags);
-    setQuick('thisWeek');
+    renderMultiSelect('project-list',allProjects,'project',selectedProjects);
+    renderMultiSelect('tag-list',allTags,'tag',selectedTags);
     hide('loading-panel');
     show('filter-panel');
-  }catch(e){
-    hide('loading-panel');
-    showErr('main-error', e.message);
-  }
+  }catch(e){hide('loading-panel');showErr('main-error',e.message);}
 }
 
-function renderMultiSelect(elId, items, type, selSet){
+function renderMultiSelect(elId,items,type,selSet){
   const el=document.getElementById(elId);
   if(!items.length){el.innerHTML='<div class="ms-item" style="color:var(--text-secondary)">None found</div>';return;}
-  el.innerHTML=items.map(i=>`
-    <label class="ms-item">
-      <input type="checkbox" ${selSet.has(i.id)?'checked':''} onchange="toggleFilter('${type}','${i.id}',this)">
-      ${i.name}
-    </label>`).join('');
+  el.innerHTML=items.map(i=>`<label class="ms-item"><input type="checkbox" ${selSet.has(i.id)?'checked':''} onchange="toggleFilter('${type}','${i.id}',this)">${i.name}</label>`).join('');
 }
 
-function toggleFilter(type, id, cb){
-  const map={client:selectedClients, project:selectedProjects, tag:selectedTags};
-  if(cb.checked) map[type].add(id); else map[type].delete(id);
+function toggleFilter(type,id,cb){
+  const map={client:selectedClients,project:selectedProjects,tag:selectedTags};
+  if(cb.checked)map[type].add(id);else map[type].delete(id);
   renderAllTags();
 }
 
 function renderAllTags(){
-  renderTagBar('client-tags', selectedClients, allClients, 'client');
-  renderTagBar('project-tags', selectedProjects, allProjects, 'project');
-  renderTagBar('tag-tags', selectedTags, allTags, 'tag');
+  renderTagBar('client-tags',selectedClients,allClients,'client');
+  renderTagBar('project-tags',selectedProjects,allProjects,'project');
+  renderTagBar('tag-tags',selectedTags,allTags,'tag');
 }
 
-function renderTagBar(elId, set, items, type){
+function renderTagBar(elId,set,items,type){
   document.getElementById(elId).innerHTML=[...set].map(id=>{
     const name=(items.find(i=>i.id===id)||{name:id}).name;
     return `<span class="tag">${name}<button onclick="removeFilter('${type}','${id}')">×</button></span>`;
   }).join('');
 }
 
-function removeFilter(type, id){
-  const map={client:[selectedClients,'client-list'], project:[selectedProjects,'project-list'], tag:[selectedTags,'tag-list']};
-  const [set, listId]=map[type];
-  set.delete(id);
-  renderAllTags();
+function removeFilter(type,id){
+  const map={client:[selectedClients,'client-list'],project:[selectedProjects,'project-list'],tag:[selectedTags,'tag-list']};
+  const[set,listId]=map[type];
+  set.delete(id);renderAllTags();
   document.getElementById(listId).querySelectorAll('input[type=checkbox]').forEach(cb=>{
-    if(cb.getAttribute('onchange').includes(`'${id}'`)) cb.checked=false;
+    if(cb.getAttribute('onchange').includes(`'${id}'`))cb.checked=false;
   });
 }
 
 function clearFilters(){
-  if(!CLIENT_MODE) selectedClients.clear();
-  selectedProjects.clear(); selectedTags.clear();
-  if(!CLIENT_MODE) renderMultiSelect('client-list', allClients, 'client', selectedClients);
-  renderMultiSelect('project-list', allProjects, 'project', selectedProjects);
-  renderMultiSelect('tag-list', allTags, 'tag', selectedTags);
+  if(!CLIENT_MODE)selectedClients.clear();
+  selectedProjects.clear();selectedTags.clear();
+  if(!CLIENT_MODE)renderMultiSelect('client-list',allClients,'client',selectedClients);
+  renderMultiSelect('project-list',allProjects,'project',selectedProjects);
+  renderMultiSelect('tag-list',allTags,'tag',selectedTags);
   renderAllTags();
-  setQuick('thisWeek');
   hide('results-panel');
 }
 
 function toggleGroup(btn){
   const g=btn.dataset.g;
-  if(activeGroups.has(g)) activeGroups.delete(g); else activeGroups.add(g);
+  if(activeGroups.has(g))activeGroups.delete(g);else activeGroups.add(g);
   btn.classList.toggle('on');
-  if(lastRows.length) renderCurrentTable();
+  if(lastRows.length)renderCurrentTable();
 }
 
-const quickRanges={
-  today:      ()=>{const d=new Date();return[day(d),day(d)]},
-  thisWeek:   ()=>{const d=new Date(),d1=new Date(d);d1.setDate(d.getDate()-d.getDay()+1);const d7=new Date(d1);d7.setDate(d1.getDate()+6);return[day(d1),day(d7)]},
-  lastWeek:   ()=>{const d=new Date(),d1=new Date(d);d1.setDate(d.getDate()-d.getDay()-6);const d7=new Date(d1);d7.setDate(d1.getDate()+6);return[day(d1),day(d7)]},
-  thisMonth:  ()=>{const d=new Date();return[day(new Date(d.getFullYear(),d.getMonth(),1)),day(new Date(d.getFullYear(),d.getMonth()+1,0))]},
-  lastMonth:  ()=>{const d=new Date();return[day(new Date(d.getFullYear(),d.getMonth()-1,1)),day(new Date(d.getFullYear(),d.getMonth(),0))]},
-  thisYear:   ()=>{const d=new Date();return[`${d.getFullYear()}-01-01`,`${d.getFullYear()}-12-31`]},
-};
-function day(d){return d.toISOString().split('T')[0]}
-
-function setQuick(q){
-  document.querySelectorAll('.quick-dates .pill').forEach(p=>p.classList.toggle('active',p.dataset.q===q));
-  if(q==='custom'){show('custom-dates');}
-  else{hide('custom-dates');if(quickRanges[q]){const[f,t]=quickRanges[q]();document.getElementById('date-from').value=f;document.getElementById('date-to').value=t;}}
-}
-
-function splitIntoChunks(fromStr, toStr, maxDays=30){
+// ── Report fetching ──────────────────────────────────────────────────
+function splitIntoChunks(from,to,maxDays=30){
   const chunks=[];
-  let start=new Date(fromStr+'T00:00:00Z');
-  const end=new Date(toStr+'T00:00:00Z');
-  while(start<=end){
-    let chunkEnd=new Date(start);
-    chunkEnd.setUTCDate(chunkEnd.getUTCDate()+maxDays-1);
-    if(chunkEnd>end) chunkEnd=new Date(end);
-    chunks.push([day(start),day(chunkEnd)]);
-    start=new Date(chunkEnd);
-    start.setUTCDate(start.getUTCDate()+1);
+  let s=new Date(from+'T00:00:00Z');
+  const e=new Date(to+'T00:00:00Z');
+  while(s<=e){
+    let ce=new Date(s);ce.setUTCDate(ce.getUTCDate()+maxDays-1);
+    if(ce>e)ce=new Date(e);
+    chunks.push([isoDate(s),isoDate(ce)]);
+    s=new Date(ce);s.setUTCDate(s.getUTCDate()+1);
   }
   return chunks;
 }
 
-async function fetchAllTimeEntries(from, to){
-  const chunks=splitIntoChunks(from, to, 30);
+async function fetchAllTimeEntries(from,to){
+  const chunks=splitIntoChunks(from,to,30);
   let all=[];
-  for(const [f,t] of chunks){
+  for(const[f,t]of chunks){
     let page=1;
     while(true){
       const url=`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/user/${USER_ID}/time-entries`
         +`?start=${f}T00:00:00Z&end=${t}T23:59:59Z&page-size=1000&page=${page}&hydrated=true`;
       const data=await clockifyFetch(url);
-      if(!Array.isArray(data)||!data.length) break;
+      if(!Array.isArray(data)||!data.length)break;
       all=all.concat(data);
-      if(data.length<1000) break;
+      if(data.length<1000)break;
       page++;
     }
   }
@@ -365,56 +552,47 @@ async function fetchAllTimeEntries(from, to){
 }
 
 function normalizeEntries(raw){
-  return raw
-    .map(e=>({
-      timeInterval:e.timeInterval,
-      description:e.description,
-      clientName:e.project?.clientName||'',
-      projectName:e.project?.name||'',
-      clientId:e.project?.clientId||'',
-      projectId:e.projectId||'',
-      tags:(e.tags||[]).map(t=>({id:t.id,name:t.name})),
-    }))
-    .filter(e=>{
-      if(selectedClients.size && !selectedClients.has(e.clientId)) return false;
-      if(selectedProjects.size && !selectedProjects.has(e.projectId)) return false;
-      if(selectedTags.size && !e.tags.some(t=>selectedTags.has(t.id))) return false;
-      return true;
-    });
+  return raw.map(e=>({
+    timeInterval:e.timeInterval,
+    description:e.description,
+    clientName:e.project?.clientName||'',
+    projectName:e.project?.name||'',
+    clientId:e.project?.clientId||'',
+    projectId:e.projectId||'',
+    tags:(e.tags||[]).map(t=>({id:t.id,name:t.name})),
+  })).filter(e=>{
+    if(selectedClients.size&&!selectedClients.has(e.clientId))return false;
+    if(selectedProjects.size&&!selectedProjects.has(e.projectId))return false;
+    if(selectedTags.size&&!e.tags.some(t=>selectedTags.has(t.id)))return false;
+    return true;
+  });
 }
 
 async function runReport(){
-  const from=document.getElementById('date-from').value;
-  const to=document.getElementById('date-to').value;
-  if(!from||!to){showErr('main-error','Select a date range.');return;}
+  if(!dateFrom||!dateTo){showErr('main-error','Select a date range.');return;}
   showErr('main-error','');
-  show('loading-panel');
-  hide('results-panel');
+  show('loading-panel');hide('results-panel');
   try{
-    const raw=await fetchAllTimeEntries(from, to);
+    const raw=await fetchAllTimeEntries(dateFrom,dateTo);
     const entries=normalizeEntries(raw);
     lastData=entries;
     hide('loading-panel');
-    renderResults(entries, from, to);
+    renderResults(entries,dateFrom,dateTo);
   }catch(e){hide('loading-panel');showErr('main-error',e.message);}
 }
 
-function renderResults(entries, from, to){
+// ── Rendering ────────────────────────────────────────────────────────
+function renderResults(entries,from,to){
   let totalSec=0;
   entries.forEach(e=>{totalSec+=parseISODuration(e.timeInterval?.duration);});
-
   document.getElementById('results-title').textContent=`${entries.length} entries · ${from} – ${to}`;
   document.getElementById('stat-row').innerHTML=`
     <div class="stat"><div class="stat-label">Total time</div><div class="stat-value">${hms(totalSec)}</div></div>
-    <div class="stat"><div class="stat-label">Entries</div><div class="stat-value">${entries.length}</div></div>
-  `;
-
+    <div class="stat"><div class="stat-label">Entries</div><div class="stat-value">${entries.length}</div></div>`;
   if(!entries.length){
     document.getElementById('table-area').innerHTML='<div class="empty">No entries found for this period and filter combination.</div>';
-    show('results-panel');
-    return;
+    show('results-panel');return;
   }
-
   lastRows=entries.map(e=>({
     Date:e.timeInterval?.start?.split('T')[0]||'',
     Client:e.clientName||'—',
@@ -424,69 +602,47 @@ function renderResults(entries, from, to){
     Duration:hms(parseISODuration(e.timeInterval?.duration)),
     'Duration (h)':((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2),
   }));
-
   renderCurrentTable();
   show('results-panel');
 }
 
-function renderCurrentTable(){
-  renderTable(groupRows(lastRows));
-}
+function renderCurrentTable(){renderTable(groupRows(lastRows));}
 
 function groupRows(rows){
   if(!activeGroups.size){
-    return [...rows].sort((a,b)=>dateSortDir==='asc'?a.Date.localeCompare(b.Date):b.Date.localeCompare(a.Date));
+    return[...rows].sort((a,b)=>dateSortDir==='asc'?a.Date.localeCompare(b.Date):b.Date.localeCompare(a.Date));
   }
   const groups={};
   rows.forEach(r=>{
-    const key=[...activeGroups].map(g=>{
-      if(g==='CLIENT') return r.Client;
-      if(g==='PROJECT') return r.Project;
-      if(g==='TAG') return r.Tags;
-      return '';
-    }).join(' · ');
-    if(!groups[key]) groups[key]={Group:key,_count:0,_sec:0};
+    const key=[...activeGroups].map(g=>g==='CLIENT'?r.Client:g==='PROJECT'?r.Project:g==='TAG'?r.Tags:'').join(' · ');
+    if(!groups[key])groups[key]={Group:key,_count:0,_sec:0};
     groups[key]._count++;
     groups[key]._sec+=parseFloat(r['Duration (h)'])||0;
   });
-  return Object.values(groups).map(v=>({
-    Group:v.Group,
-    Entries:v._count,
-    Duration:hms(Math.round(v._sec*3600)),
-    'Duration (h)':v._sec.toFixed(2),
-  }));
+  return Object.values(groups).map(v=>({Group:v.Group,Entries:v._count,Duration:hms(Math.round(v._sec*3600)),'Duration (h)':v._sec.toFixed(2)}));
 }
 
-function toggleDateSort(){
-  dateSortDir=dateSortDir==='asc'?'desc':'asc';
-  renderCurrentTable();
-}
+function toggleDateSort(){dateSortDir=dateSortDir==='asc'?'desc':'asc';renderCurrentTable();}
 
 function renderTable(rows){
-  if(!rows.length) return;
+  if(!rows.length)return;
   const cols=Object.keys(rows[0]);
   const isUngrouped=cols.includes('Date');
   document.getElementById('table-area').innerHTML=`<table>
-    <thead><tr>${cols.map(c=>{
-      if(c==='Date'&&isUngrouped){
-        return `<th style="cursor:pointer;user-select:none" onclick="toggleDateSort()">Date ${dateSortDir==='asc'?'↑':'↓'}</th>`;
-      }
-      return `<th>${c}</th>`;
-    }).join('')}</tr></thead>
+    <thead><tr>${cols.map(c=>c==='Date'&&isUngrouped
+      ?`<th style="cursor:pointer;user-select:none" onclick="toggleDateSort()">Date ${dateSortDir==='asc'?'↑':'↓'}</th>`
+      :`<th>${c}</th>`).join('')}</tr></thead>
     <tbody>${rows.map(r=>`<tr>${cols.map(c=>{
       const v=r[c]??'';
-      if(c==='Duration'||c==='Duration (h)') return `<td class="dur">${v}</td>`;
-      return `<td>${v}</td>`;
-    }).join('')}</tr>`).join('')}</tbody>
-  </table>`;
+      return(c==='Duration'||c==='Duration (h)')?`<td class="dur">${v}</td>`:`<td>${v}</td>`;
+    }).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
+// ── Export ───────────────────────────────────────────────────────────
 function exportXLSX(){
   if(!lastData.length){alert('Run a report first.');return;}
   const rows=lastData.map(e=>({
-    Client:e.clientName||'',
-    Project:e.projectName||'',
-    Description:e.description||'',
+    Client:e.clientName||'',Project:e.projectName||'',Description:e.description||'',
     Date:e.timeInterval?.start?.split('T')[0]||'',
     Time:parseFloat(((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2)),
   }));
@@ -495,10 +651,6 @@ function exportXLSX(){
   XLSX.utils.book_append_sheet(wb,ws,'Clockify');
   XLSX.writeFile(wb,'clockify-report.xlsx');
 }
-
-function show(id){document.getElementById(id).style.display='block'}
-function hide(id){document.getElementById(id).style.display='none'}
-function showErr(id,msg){document.getElementById(id).innerHTML=msg?`<div class="error">${msg}</div>`:'';}
 </script>
 </body>
 </html>
