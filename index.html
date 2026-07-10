@@ -362,13 +362,25 @@ document.addEventListener('DOMContentLoaded', ()=>{
   document.getElementById('dp-trigger').addEventListener('click', ()=>{
     dpOpen ? closePicker() : openPicker();
   });
-  // Close on outside click — but NOT if the click was inside the popup
+
+  // Close on outside click. We can't use DOM containment here because
+  // dayClick() calls renderCal() which replaces the clicked button in the
+  // DOM — so by the time this handler runs, e.target is already detached
+  // and .contains() returns false even for clicks inside the popup.
+  // Instead we use a flag that dayClick() and preset clicks set to say
+  // "this click was intentionally inside the picker, don't close it".
   document.addEventListener('click', e=>{
     if(!dpOpen) return;
-    if(document.getElementById('dp-wrap').contains(e.target)) return;
+    if(_pickerClickHandled){ _pickerClickHandled=false; return; }
+    // Also allow clicks on the trigger itself (handled by its own listener)
+    if(document.getElementById('dp-trigger').contains(e.target)) return;
     closePicker();
   });
 });
+
+// Set this to true in any click handler inside the picker to prevent the
+// outside-click handler above from immediately closing it.
+let _pickerClickHandled = false;
 
 // ── Preset list ─────────────────────────────────────────────────────
 function buildPresets(){
@@ -379,6 +391,7 @@ function buildPresets(){
 }
 
 function selectPreset(key){
+  _pickerClickHandled = true;
   if(key === 'custom'){
     // Switch to custom mode: keep existing dates as starting point,
     // let user pick new ones on calendar. Don't close picker.
@@ -403,6 +416,7 @@ function selectPreset(key){
 
 // ── Calendar ─────────────────────────────────────────────────────────
 function calShift(dir){
+  _pickerClickHandled = true;
   calMonth += dir;
   if(calMonth > 11){ calMonth = 0; calYear++; }
   if(calMonth < 0) { calMonth = 11; calYear--; }
@@ -462,6 +476,7 @@ function renderCal(){
 }
 
 function dayClick(iso){
+  _pickerClickHandled = true; // tell outside-click handler to ignore this
   // Non-custom presets: clicking a date switches to custom mode and starts picking
   if(activePreset !== 'custom'){
     activePreset = 'custom';
@@ -507,6 +522,7 @@ function showFooter(visible){
 }
 
 function applyCustom(){
+  _pickerClickHandled = true;
   if(!customStart || !customEnd) return;
   const lo = customStart<=customEnd?customStart:customEnd;
   const hi = customStart<=customEnd?customEnd:customStart;
@@ -515,6 +531,7 @@ function applyCustom(){
 }
 
 function cancelCustom(){
+  _pickerClickHandled = true;
   // Revert picker state to last committed range and close
   customStart = dateFrom; customEnd = dateTo;
   activePreset = activePreset; // keep as-is
