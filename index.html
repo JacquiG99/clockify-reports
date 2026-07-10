@@ -70,79 +70,15 @@ tr:hover td{background:var(--bg-secondary)}
 .dur{font-variant-numeric:tabular-nums;text-align:right}
 .footer-note{font-size:11px;color:var(--text-tertiary);margin-top:2rem;text-align:center}
 
-/* ── Date picker ───────────────────────────────────── */
-.dp-wrap{position:relative;display:inline-block;width:100%}
-
-/* The trigger button just shows current selection */
-.dp-trigger{
-  display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;
-  border:0.5px solid var(--border-secondary);border-radius:var(--radius-md);
-  background:var(--bg-primary);cursor:pointer;font-size:13px;
-  color:var(--text-primary);user-select:none;width:100%;
-}
-.dp-trigger:hover{background:var(--bg-secondary)}
-.dp-trigger i{color:var(--text-secondary);font-size:16px;flex-shrink:0}
-.dp-trigger-label{flex:1;font-weight:500}
-.dp-trigger-sub{font-size:11px;color:var(--text-secondary)}
-.dp-trigger-caret{color:var(--text-secondary);font-size:12px;flex-shrink:0}
-
-/* Popup: absolutely positioned, appears below trigger */
-.dp-popup{
-  display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:500;
-  background:var(--bg-primary);border:0.5px solid var(--border-secondary);
-  border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,.18);
-  min-width:380px;
-}
-.dp-popup.open{display:block}
-.dp-inner{display:flex}
-
-/* Preset list */
-.dp-presets{width:150px;border-right:0.5px solid var(--border-tertiary);padding:6px 0;flex-shrink:0}
-.dp-preset{
-  padding:9px 14px;font-size:13px;cursor:pointer;
-  color:var(--text-primary);border-left:2px solid transparent;
-}
-.dp-preset:hover{background:var(--bg-secondary)}
-.dp-preset.active{
-  background:var(--green-light);color:var(--green-dark);
-  font-weight:500;border-left-color:var(--green);
-}
-
-/* Calendar */
-.dp-cal{padding:14px}
-.dp-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
-.dp-cal-title{font-weight:600;font-size:14px}
-.dp-cal-btn{
-  background:none;border:none;cursor:pointer;color:var(--text-secondary);
-  padding:4px 8px;border-radius:var(--radius-md);font-size:18px;line-height:1;
-}
-.dp-cal-btn:hover:not(:disabled){background:var(--bg-secondary);color:var(--text-primary)}
-.dp-cal-btn:disabled{opacity:.25;cursor:default}
-.dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.dp-dow{text-align:center;font-size:11px;font-weight:600;color:var(--text-secondary);padding:3px 0;text-transform:uppercase}
-.dp-day{
-  text-align:center;padding:6px 2px;font-size:13px;border:none;
-  background:none;color:var(--text-primary);font-family:inherit;
-  width:100%;line-height:1.4;border-radius:var(--radius-md);
-}
-/* Only show pointer cursor on clickable days */
-.dp-day:not(:disabled):not(.other-month){cursor:pointer}
-.dp-day:not(:disabled):not(.other-month):not(.range-start):not(.range-end):hover{background:var(--bg-secondary)}
-.dp-day.other-month{color:var(--text-tertiary)}
-.dp-day:disabled{color:var(--border-secondary)}
-.dp-day.in-range{background:var(--green-light);border-radius:0}
-.dp-day.range-start{background:var(--green);color:#fff;font-weight:600;border-radius:var(--radius-md) 0 0 var(--radius-md)}
-.dp-day.range-end{background:var(--green);color:#fff;font-weight:600;border-radius:0 var(--radius-md) var(--radius-md) 0}
-.dp-day.range-start.range-end{border-radius:var(--radius-md)}
-.dp-day.is-today:not(.range-start):not(.range-end){font-weight:700;color:var(--green)}
-
-/* Footer — only shown for custom range */
-.dp-footer{
-  display:none;justify-content:space-between;align-items:center;
-  padding:10px 14px;border-top:0.5px solid var(--border-tertiary);
-}
-.dp-footer.visible{display:flex}
-.dp-footer-hint{font-size:12px;color:var(--text-secondary)}
+/* ── Date pills ─────────────────────────────────────── */
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.pill{padding:5px 12px;border:0.5px solid var(--border-secondary);border-radius:20px;font-size:12px;cursor:pointer;background:transparent;color:var(--text-secondary);font-family:inherit}
+.pill:hover{background:var(--bg-secondary);color:var(--text-primary)}
+.pill.active{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:500}
+.custom-dates{display:none;gap:12px;flex-wrap:wrap;margin-top:8px}
+.custom-dates.open{display:flex}
+.custom-dates .field{display:flex;flex-direction:column;gap:5px;flex:1;min-width:140px}
+.custom-dates label{font-size:12px;color:var(--text-secondary)}
 </style>
 </head>
 <body>
@@ -157,39 +93,19 @@ tr:hover td{background:var(--bg-secondary)}
     <div class="card">
       <div class="section-label" style="margin-bottom:.75rem">Date range</div>
 
-      <div class="dp-wrap" id="dp-wrap">
-        <!-- Trigger button -->
-        <div class="dp-trigger" id="dp-trigger">
-          <i class="ti ti-calendar"></i>
-          <span class="dp-trigger-label" id="dp-label">This week</span>
-          <span class="dp-trigger-sub" id="dp-sub"></span>
-          <span class="dp-trigger-caret">▾</span>
-        </div>
-
-        <!-- Popup -->
-        <div class="dp-popup" id="dp-popup">
-          <div class="dp-inner">
-            <!-- Preset list -->
-            <div class="dp-presets" id="dp-presets"></div>
-            <!-- Calendar -->
-            <div class="dp-cal">
-              <div class="dp-cal-head">
-                <button class="dp-cal-btn" id="dp-prev" onclick="calShift(-1)">&#8249;</button>
-                <span class="dp-cal-title" id="dp-title"></span>
-                <button class="dp-cal-btn" id="dp-next" onclick="calShift(1)">&#8250;</button>
-              </div>
-              <div class="dp-grid" id="dp-grid"></div>
-            </div>
-          </div>
-          <!-- Footer — only visible during custom range picking -->
-          <div class="dp-footer" id="dp-footer">
-            <span class="dp-footer-hint" id="dp-hint"></span>
-            <div style="display:flex;gap:8px">
-              <button class="btn btn-sm" onclick="cancelCustom()">Cancel</button>
-              <button class="btn btn-sm btn-primary" id="dp-apply" onclick="applyCustom()" disabled>Apply</button>
-            </div>
-          </div>
-        </div>
+      <div class="pills">
+        <button class="pill" data-p="today"      onclick="setPill(this)">Today</button>
+        <button class="pill" data-p="yesterday"  onclick="setPill(this)">Yesterday</button>
+        <button class="pill active" data-p="thisWeek"  onclick="setPill(this)">This week</button>
+        <button class="pill" data-p="lastWeek"   onclick="setPill(this)">Last week</button>
+        <button class="pill" data-p="thisMonth"  onclick="setPill(this)">This month</button>
+        <button class="pill" data-p="lastMonth"  onclick="setPill(this)">Last month</button>
+        <button class="pill" data-p="thisYear"   onclick="setPill(this)">This year</button>
+        <button class="pill" data-p="custom"     onclick="setPill(this)">Custom</button>
+      </div>
+      <div class="custom-dates" id="custom-dates">
+        <div class="field"><label>From</label><input type="date" id="date-from" min="2026-01-01" /></div>
+        <div class="field"><label>To</label><input type="date" id="date-to" min="2026-01-01" /></div>
       </div>
 
       <hr class="divider">
@@ -247,46 +163,29 @@ tr:hover td{background:var(--bg-secondary)}
 </div>
 
 <script>
-// ── Config ──────────────────────────────────────────────────────────
-const MIN_DATE = '2026-01-01';
-const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-const PRESETS = [
-  {key:'today',      label:'Today'},
-  {key:'yesterday',  label:'Yesterday'},
-  {key:'thisWeek',   label:'This week'},
-  {key:'lastWeek',   label:'Last week'},
-  {key:'thisMonth',  label:'This month'},
-  {key:'lastMonth',  label:'Last month'},
-  {key:'thisYear',   label:'This year'},
-  {key:'custom',     label:'Custom range'},
-];
-
-// ── App state ───────────────────────────────────────────────────────
+// ── State ────────────────────────────────────────────────────────────
 let WORKSPACE_ID='', USER_ID='';
 let allProjects=[], allClients=[], allTags=[];
 let selectedClients=new Set(), selectedProjects=new Set(), selectedTags=new Set();
-let activeGroups=new Set(); // no grouping by default
+let activeGroups=new Set();
 let lastData=[], lastRows=[];
 let dateSortDir='desc';
+let dateFrom='', dateTo='';
 
-// Committed date range
-let dateFrom='', dateTo='', activePreset='thisWeek';
-
-// URL params
 const _p = new URLSearchParams(window.location.search);
 const CLIENT_MODE = _p.get('client');
 const DATE_PARAM  = _p.get('date');
 
 function slugify(n){return(n||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');}
 
-// ── API ─────────────────────────────────────────────────────────────
+// ── API ───────────────────────────────────────────────────────────────
 async function clockifyFetch(url,method='GET',body=null){
   const r=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,method,body})});
   if(!r.ok){const t=await r.text();throw new Error(`API error (${r.status}): ${t}`);}
   return r.json();
 }
 
-// ── Utils ───────────────────────────────────────────────────────────
+// ── Utils ─────────────────────────────────────────────────────────────
 function hms(sec){const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);return h+'h '+(m<10?'0':'')+m+'m';}
 function parseISODuration(iso){
   if(!iso)return 0;
@@ -294,255 +193,57 @@ function parseISODuration(iso){
   return m?Math.round(parseFloat(m[1]||0)*3600+parseFloat(m[2]||0)*60+parseFloat(m[3]||0)):0;
 }
 function isoDate(d){return d.toISOString().split('T')[0];}
-function clamp(s){return s<MIN_DATE?MIN_DATE:s;}
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 function showErr(id,msg){document.getElementById(id).innerHTML=msg?`<div class="error">${msg}</div>`:'';}
 
-// ── Preset → range ──────────────────────────────────────────────────
-function presetRange(key){
-  const n=new Date(), y=n.getFullYear(), mo=n.getMonth();
-  if(key==='today')     return [isoDate(n), isoDate(n)];
-  if(key==='yesterday') {const d=new Date(n);d.setDate(d.getDate()-1);return[isoDate(d),isoDate(d)];}
-  if(key==='thisWeek')  {const s=new Date(n);s.setDate(n.getDate()-((n.getDay()+6)%7));const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];}
-  if(key==='lastWeek')  {const s=new Date(n);s.setDate(n.getDate()-((n.getDay()+6)%7)-7);const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];}
-  if(key==='thisMonth') return [`${y}-${String(mo+1).padStart(2,'0')}-01`, isoDate(new Date(y,mo+1,0))];
-  if(key==='lastMonth') {const lm=mo===0?11:mo-1,ly=mo===0?y-1:y;return[`${ly}-${String(lm+1).padStart(2,'0')}-01`,isoDate(new Date(ly,lm+1,0))];}
-  if(key==='thisYear')  return [`${y}-01-01`, `${y}-12-31`];
-  return null;
-}
-
-// ── Commit a range ──────────────────────────────────────────────────
-// Committing immediately updates the trigger label. The report itself
-// only runs when "Run report" is clicked.
-function commitRange(from, to, preset){
-  dateFrom = clamp(from);
-  dateTo   = clamp(to);
-  activePreset = preset || 'custom';
-  const p = PRESETS.find(x=>x.key===activePreset);
-  document.getElementById('dp-label').textContent = p ? p.label : 'Custom range';
-  document.getElementById('dp-sub').textContent =
-    activePreset==='custom' ? `${dateFrom} – ${dateTo}` : `${dateFrom} – ${dateTo}`;
-}
-
-// ── Date picker state ───────────────────────────────────────────────
-let dpOpen = false;
-let calYear = new Date().getFullYear();
-let calMonth = new Date().getMonth();
-// Custom range picking
-let customStart = null; // first click
-let customEnd   = null; // second click
-let pickingCustom = false; // true after first click, waiting for second
-
-// ── Open / close ────────────────────────────────────────────────────
-function openPicker(){
-  dpOpen = true;
-  // Navigate calendar to show the current range start
-  if(dateFrom){
-    const d = new Date(dateFrom+'T12:00:00');
-    calYear = d.getFullYear(); calMonth = d.getMonth();
-  }
-  customStart = dateFrom || null;
-  customEnd   = dateTo   || null;
-  pickingCustom = false;
-  buildPresets();
-  renderCal();
-  showFooter(false);
-  document.getElementById('dp-popup').classList.add('open');
-}
-
-function closePicker(){
-  dpOpen = false;
-  pickingCustom = false;
-  document.getElementById('dp-popup').classList.remove('open');
-}
-
-// Toggle on trigger click
-document.addEventListener('DOMContentLoaded', ()=>{
-  document.getElementById('dp-trigger').addEventListener('click', ()=>{
-    dpOpen ? closePicker() : openPicker();
-  });
-
-  // Close on outside click. We can't use DOM containment here because
-  // dayClick() calls renderCal() which replaces the clicked button in the
-  // DOM — so by the time this handler runs, e.target is already detached
-  // and .contains() returns false even for clicks inside the popup.
-  // Instead we use a flag that dayClick() and preset clicks set to say
-  // "this click was intentionally inside the picker, don't close it".
-  document.addEventListener('click', e=>{
-    if(!dpOpen) return;
-    if(_pickerClickHandled){ _pickerClickHandled=false; return; }
-    // Also allow clicks on the trigger itself (handled by its own listener)
-    if(document.getElementById('dp-trigger').contains(e.target)) return;
-    closePicker();
-  });
-});
-
-// Set this to true in any click handler inside the picker to prevent the
-// outside-click handler above from immediately closing it.
-let _pickerClickHandled = false;
-
-// ── Preset list ─────────────────────────────────────────────────────
-function buildPresets(){
-  document.getElementById('dp-presets').innerHTML = PRESETS.map(p=>`
-    <div class="dp-preset${activePreset===p.key?' active':''}" onclick="selectPreset('${p.key}')">
-      ${p.label}
-    </div>`).join('');
-}
-
-function selectPreset(key){
-  _pickerClickHandled = true;
-  if(key === 'custom'){
-    // Switch to custom mode: keep existing dates as starting point,
-    // let user pick new ones on calendar. Don't close picker.
-    activePreset = 'custom';
-    customStart = dateFrom || null;
-    customEnd   = null;
-    pickingCustom = false;
-    buildPresets();
-    showFooter(true);
-    updateHint();
-    renderCal();
+// ── Date pills ────────────────────────────────────────────────────────
+function setPill(btn){
+  document.querySelectorAll('.pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  const key = btn.dataset.p;
+  const cd  = document.getElementById('custom-dates');
+  if(key==='custom'){
+    cd.classList.add('open');
+    // Pre-fill inputs with current range if available
+    if(dateFrom) document.getElementById('date-from').value = dateFrom;
+    if(dateTo)   document.getElementById('date-to').value   = dateTo;
     return;
   }
-  // Non-custom presets: apply immediately and close
-  const range = presetRange(key);
-  if(!range) return;
-  commitRange(range[0], range[1], key);
-  customStart = dateFrom; customEnd = dateTo;
-  pickingCustom = false;
-  closePicker();
+  cd.classList.remove('open');
+  const n=new Date(), y=n.getFullYear(), mo=n.getMonth();
+  const ranges = {
+    today:     [isoDate(n), isoDate(n)],
+    yesterday: (()=>{const d=new Date(n);d.setDate(d.getDate()-1);return[isoDate(d),isoDate(d)];})(),
+    thisWeek:  (()=>{const s=new Date(n);s.setDate(n.getDate()-((n.getDay()+6)%7));const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];})(),
+    lastWeek:  (()=>{const s=new Date(n);s.setDate(n.getDate()-((n.getDay()+6)%7)-7);const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];})(),
+    thisMonth: [`${y}-${String(mo+1).padStart(2,'0')}-01`, isoDate(new Date(y,mo+1,0))],
+    lastMonth: (()=>{const lm=mo===0?11:mo-1,ly=mo===0?y-1:y;return[`${ly}-${String(lm+1).padStart(2,'0')}-01`,isoDate(new Date(ly,lm+1,0))];})(),
+    thisYear:  [`${y}-01-01`,`${y}-12-31`],
+  };
+  if(ranges[key]){ dateFrom=ranges[key][0]; dateTo=ranges[key][1]; }
 }
 
-// ── Calendar ─────────────────────────────────────────────────────────
-function calShift(dir){
-  _pickerClickHandled = true;
-  calMonth += dir;
-  if(calMonth > 11){ calMonth = 0; calYear++; }
-  if(calMonth < 0) { calMonth = 11; calYear--; }
-  renderCal();
-}
-
-function renderCal(){
-  const title = document.getElementById('dp-title');
-  const grid  = document.getElementById('dp-grid');
-  title.textContent = `${MONTHS[calMonth]} ${calYear}`;
-
-  // Disable back nav at Jan 2026
-  document.getElementById('dp-prev').disabled = (calYear===2026 && calMonth===0);
-
-  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-  const firstDow    = (new Date(calYear, calMonth, 1).getDay()+6)%7; // Mon=0
-  const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
-  const today       = isoDate(new Date());
-
-  // Normalise the displayed range (lo <= hi)
-  const lo = customStart && customEnd
-    ? (customStart <= customEnd ? customStart : customEnd)
-    : customStart;
-  const hi = customStart && customEnd
-    ? (customStart <= customEnd ? customEnd : customStart)
-    : customStart;
-
-  let html = ['Mo','Tu','We','Th','Fr','Sa','Su']
-    .map(d=>`<div class="dp-dow">${d}</div>`).join('');
-
-  // Prev-month fillers (greyed, unclickable)
-  for(let i=firstDow-1; i>=0; i--)
-    html += `<button class="dp-day other-month" disabled>${prevMonthDays-i}</button>`;
-
-  for(let d=1; d<=daysInMonth; d++){
-    const iso = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const disabled = iso < MIN_DATE;
-    const isStart  = lo && iso === lo;
-    const isEnd    = hi && iso === hi;
-    const inRange  = lo && hi && iso > lo && iso < hi;
-    let cls = 'dp-day';
-    if(isStart) cls += ' range-start';
-    if(isEnd)   cls += ' range-end';
-    if(inRange) cls += ' in-range';
-    if(iso === today && !isStart && !isEnd) cls += ' is-today';
-    if(disabled) cls += ' other-month';
-    html += `<button class="${cls}"${disabled?' disabled':''} onclick="dayClick('${iso}')">${d}</button>`;
+function getDateRange(){
+  const activePill = document.querySelector('.pill.active');
+  if(activePill && activePill.dataset.p==='custom'){
+    dateFrom = document.getElementById('date-from').value;
+    dateTo   = document.getElementById('date-to').value;
   }
-
-  // Next-month fillers
-  const used = firstDow + daysInMonth;
-  const tail = used % 7 === 0 ? 0 : 7 - (used%7);
-  for(let d=1; d<=tail; d++)
-    html += `<button class="dp-day other-month" disabled>${d}</button>`;
-
-  grid.innerHTML = html;
+  return { from: dateFrom, to: dateTo };
 }
 
-function dayClick(iso){
-  _pickerClickHandled = true; // tell outside-click handler to ignore this
-  // Non-custom presets: clicking a date switches to custom mode and starts picking
-  if(activePreset !== 'custom'){
-    activePreset = 'custom';
-    buildPresets();
-    showFooter(true);
-  }
-
-  if(!pickingCustom){
-    // First click: set start, wait for end
-    customStart = iso;
-    customEnd   = null;
-    pickingCustom = true;
-  } else {
-    // Second click: complete the range
-    customEnd = iso;
-    pickingCustom = false;
-    document.getElementById('dp-apply').disabled = false;
-  }
-  updateHint();
-  renderCal();
+// Activate a pill by key (used on boot for URL param / default)
+function activatePillByKey(key){
+  const btn = document.querySelector(`.pill[data-p="${key}"]`);
+  if(btn) setPill(btn);
 }
 
-function updateHint(){
-  const el = document.getElementById('dp-hint');
-  if(pickingCustom){
-    el.textContent = `From ${customStart} — now click an end date`;
-  } else if(customStart && customEnd){
-    const lo = customStart<=customEnd?customStart:customEnd;
-    const hi = customStart<=customEnd?customEnd:customStart;
-    el.textContent = `${lo} – ${hi}`;
-  } else {
-    el.textContent = 'Click a start date';
-  }
-}
-
-function showFooter(visible){
-  const f = document.getElementById('dp-footer');
-  f.classList.toggle('visible', visible);
-  if(visible){
-    document.getElementById('dp-apply').disabled = true;
-    updateHint();
-  }
-}
-
-function applyCustom(){
-  _pickerClickHandled = true;
-  if(!customStart || !customEnd) return;
-  const lo = customStart<=customEnd?customStart:customEnd;
-  const hi = customStart<=customEnd?customEnd:customStart;
-  commitRange(lo, hi, 'custom');
-  closePicker();
-}
-
-function cancelCustom(){
-  _pickerClickHandled = true;
-  // Revert picker state to last committed range and close
-  customStart = dateFrom; customEnd = dateTo;
-  activePreset = activePreset; // keep as-is
-  closePicker();
-}
-
-// ── Boot ─────────────────────────────────────────────────────────────
+// ── Boot ──────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async ()=>{
-  const startPreset = (DATE_PARAM && PRESETS.find(p=>p.key===DATE_PARAM)) ? DATE_PARAM : 'thisWeek';
-  const range = presetRange(startPreset);
-  if(range) commitRange(range[0], range[1], startPreset);
+  // Apply URL ?date= param or default to thisWeek
+  const startKey = DATE_PARAM || 'thisWeek';
+  activatePillByKey(startKey);
 
   try{
     const me = await clockifyFetch('https://api.clockify.me/api/v1/user');
@@ -685,13 +386,14 @@ function normalizeEntries(raw){
 }
 
 async function runReport(){
-  if(!dateFrom||!dateTo){ showErr('main-error','Select a date range.'); return; }
+  const {from, to} = getDateRange();
+  if(!from||!to){ showErr('main-error','Select a date range.'); return; }
   showErr('main-error',''); show('loading-panel'); hide('results-panel');
   try{
-    const raw = await fetchAllTimeEntries(dateFrom, dateTo);
+    const raw = await fetchAllTimeEntries(from, to);
     lastData = normalizeEntries(raw);
     hide('loading-panel');
-    renderResults(lastData, dateFrom, dateTo);
+    renderResults(lastData, from, to);
   }catch(e){ hide('loading-panel'); showErr('main-error', e.message); }
 }
 
