@@ -70,47 +70,79 @@ tr:hover td{background:var(--bg-secondary)}
 .dur{font-variant-numeric:tabular-nums;text-align:right}
 .footer-note{font-size:11px;color:var(--text-tertiary);margin-top:2rem;text-align:center}
 
-/* ── Date picker ───────────────────────────────────────────────── */
-.dp-wrap{position:relative}
-.dp-trigger{display:flex;align-items:center;gap:10px;height:38px;padding:0 12px;border:0.5px solid var(--border-secondary);border-radius:var(--radius-md);background:var(--bg-primary);cursor:pointer;font-size:13px;color:var(--text-primary);user-select:none;width:100%}
+/* ── Date picker ───────────────────────────────────── */
+.dp-wrap{position:relative;display:inline-block;width:100%}
+
+/* The trigger button just shows current selection */
+.dp-trigger{
+  display:flex;align-items:center;gap:8px;height:38px;padding:0 12px;
+  border:0.5px solid var(--border-secondary);border-radius:var(--radius-md);
+  background:var(--bg-primary);cursor:pointer;font-size:13px;
+  color:var(--text-primary);user-select:none;width:100%;
+}
 .dp-trigger:hover{background:var(--bg-secondary)}
-.dp-trigger-icon{color:var(--text-secondary);font-size:16px;flex-shrink:0}
-.dp-label{flex:1;font-weight:500}
-.dp-sublabel{font-size:11px;color:var(--text-secondary);margin-left:4px}
-.dp-arrows{display:flex;flex-shrink:0}
-.dp-arrows button{background:var(--bg-primary);border:0.5px solid var(--border-secondary);border-left:none;cursor:pointer;color:var(--text-secondary);padding:0 12px;font-size:18px;line-height:1;font-family:inherit;height:38px}
-.dp-arrows button:first-child{border-radius:0}
-.dp-arrows button:last-child{border-radius:0 var(--radius-md) var(--radius-md) 0}
-.dp-arrows button:hover{background:var(--bg-secondary);color:var(--text-primary)}
+.dp-trigger i{color:var(--text-secondary);font-size:16px;flex-shrink:0}
+.dp-trigger-label{flex:1;font-weight:500}
+.dp-trigger-sub{font-size:11px;color:var(--text-secondary)}
+.dp-trigger-caret{color:var(--text-secondary);font-size:12px;flex-shrink:0}
 
-.dp-popup{position:absolute;top:calc(100% + 6px);left:0;z-index:200;background:var(--bg-primary);border:0.5px solid var(--border-secondary);border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,.18);display:none;min-width:420px}
-.dp-popup.open{display:flex;flex-direction:column}
-.dp-popup-body{display:flex}
-.dp-presets{width:148px;border-right:0.5px solid var(--border-tertiary);padding:8px 0;flex-shrink:0}
-.dp-preset{padding:9px 16px;font-size:13px;cursor:pointer;color:var(--text-primary);border-left:2px solid transparent}
+/* Popup: absolutely positioned, appears below trigger */
+.dp-popup{
+  display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:500;
+  background:var(--bg-primary);border:0.5px solid var(--border-secondary);
+  border-radius:var(--radius-lg);box-shadow:0 8px 32px rgba(0,0,0,.18);
+  min-width:380px;
+}
+.dp-popup.open{display:block}
+.dp-inner{display:flex}
+
+/* Preset list */
+.dp-presets{width:150px;border-right:0.5px solid var(--border-tertiary);padding:6px 0;flex-shrink:0}
+.dp-preset{
+  padding:9px 14px;font-size:13px;cursor:pointer;
+  color:var(--text-primary);border-left:2px solid transparent;
+}
 .dp-preset:hover{background:var(--bg-secondary)}
-.dp-preset.active{background:var(--green-light);color:var(--green-dark);font-weight:500;border-left-color:var(--green)}
+.dp-preset.active{
+  background:var(--green-light);color:var(--green-dark);
+  font-weight:500;border-left-color:var(--green);
+}
 
-.dp-cal{padding:16px 16px 8px;flex:1}
-.dp-cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+/* Calendar */
+.dp-cal{padding:14px}
+.dp-cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .dp-cal-title{font-weight:600;font-size:14px}
-.dp-cal-nav{background:none;border:none;cursor:pointer;color:var(--text-secondary);padding:4px 10px;border-radius:var(--radius-md);font-size:18px;line-height:1;font-family:inherit}
-.dp-cal-nav:hover:not(:disabled){background:var(--bg-secondary);color:var(--text-primary)}
-.dp-cal-nav:disabled{opacity:.25;cursor:default}
+.dp-cal-btn{
+  background:none;border:none;cursor:pointer;color:var(--text-secondary);
+  padding:4px 8px;border-radius:var(--radius-md);font-size:18px;line-height:1;
+}
+.dp-cal-btn:hover:not(:disabled){background:var(--bg-secondary);color:var(--text-primary)}
+.dp-cal-btn:disabled{opacity:.25;cursor:default}
 .dp-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px}
-.dp-dow{text-align:center;font-size:11px;font-weight:600;color:var(--text-secondary);padding:4px 0;text-transform:uppercase}
-.dp-day{text-align:center;padding:6px 2px;font-size:13px;border-radius:var(--radius-md);cursor:pointer;border:none;background:none;color:var(--text-primary);font-family:inherit;width:100%;line-height:1.4}
-.dp-day:hover:not(:disabled):not(.range-start):not(.range-end){background:var(--bg-secondary)}
+.dp-dow{text-align:center;font-size:11px;font-weight:600;color:var(--text-secondary);padding:3px 0;text-transform:uppercase}
+.dp-day{
+  text-align:center;padding:6px 2px;font-size:13px;border:none;
+  background:none;color:var(--text-primary);font-family:inherit;
+  width:100%;line-height:1.4;border-radius:var(--radius-md);
+}
+/* Only show pointer cursor on clickable days */
+.dp-day:not(:disabled):not(.other-month){cursor:pointer}
+.dp-day:not(:disabled):not(.other-month):not(.range-start):not(.range-end):hover{background:var(--bg-secondary)}
 .dp-day.other-month{color:var(--text-tertiary)}
-.dp-day:disabled{color:var(--border-secondary);cursor:default}
+.dp-day:disabled{color:var(--border-secondary)}
 .dp-day.in-range{background:var(--green-light);border-radius:0}
 .dp-day.range-start{background:var(--green);color:#fff;font-weight:600;border-radius:var(--radius-md) 0 0 var(--radius-md)}
 .dp-day.range-end{background:var(--green);color:#fff;font-weight:600;border-radius:0 var(--radius-md) var(--radius-md) 0}
 .dp-day.range-start.range-end{border-radius:var(--radius-md)}
 .dp-day.is-today:not(.range-start):not(.range-end){font-weight:700;color:var(--green)}
 
-.dp-footer{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-top:0.5px solid var(--border-tertiary)}
-.dp-footer-range{font-size:12px;color:var(--text-secondary)}
+/* Footer — only shown for custom range */
+.dp-footer{
+  display:none;justify-content:space-between;align-items:center;
+  padding:10px 14px;border-top:0.5px solid var(--border-tertiary);
+}
+.dp-footer.visible{display:flex}
+.dp-footer-hint{font-size:12px;color:var(--text-secondary)}
 </style>
 </head>
 <body>
@@ -124,35 +156,37 @@ tr:hover td{background:var(--bg-secondary)}
   <div id="filter-panel" style="display:none">
     <div class="card">
       <div class="section-label" style="margin-bottom:.75rem">Date range</div>
-      <div class="dp-wrap">
-        <div style="display:flex;gap:0">
-          <div class="dp-trigger" id="dp-trigger" onclick="togglePicker(event)" style="flex:1;border-radius:var(--radius-md) 0 0 var(--radius-md);border-right:none">
-            <i class="ti ti-calendar dp-trigger-icon"></i>
-            <span class="dp-label" id="dp-label">This week</span>
-            <span class="dp-sublabel" id="dp-sublabel"></span>
-          </div>
-          <div class="dp-arrows">
-            <button onclick="shiftRange(-1,event)" title="Previous period">&#8249;</button>
-            <button onclick="shiftRange(1,event)" title="Next period">&#8250;</button>
-          </div>
+
+      <div class="dp-wrap" id="dp-wrap">
+        <!-- Trigger button -->
+        <div class="dp-trigger" id="dp-trigger">
+          <i class="ti ti-calendar"></i>
+          <span class="dp-trigger-label" id="dp-label">This week</span>
+          <span class="dp-trigger-sub" id="dp-sub"></span>
+          <span class="dp-trigger-caret">▾</span>
         </div>
+
+        <!-- Popup -->
         <div class="dp-popup" id="dp-popup">
-          <div class="dp-popup-body">
+          <div class="dp-inner">
+            <!-- Preset list -->
             <div class="dp-presets" id="dp-presets"></div>
+            <!-- Calendar -->
             <div class="dp-cal">
-              <div class="dp-cal-header">
-                <button class="dp-cal-nav" id="dp-prev" onclick="calNav(-1)">&#8249;</button>
-                <span class="dp-cal-title" id="dp-cal-title"></span>
-                <button class="dp-cal-nav" id="dp-next" onclick="calNav(1)">&#8250;</button>
+              <div class="dp-cal-head">
+                <button class="dp-cal-btn" id="dp-prev" onclick="calShift(-1)">&#8249;</button>
+                <span class="dp-cal-title" id="dp-title"></span>
+                <button class="dp-cal-btn" id="dp-next" onclick="calShift(1)">&#8250;</button>
               </div>
               <div class="dp-grid" id="dp-grid"></div>
             </div>
           </div>
-          <div class="dp-footer">
-            <span class="dp-footer-range" id="dp-footer-range"></span>
+          <!-- Footer — only visible during custom range picking -->
+          <div class="dp-footer" id="dp-footer">
+            <span class="dp-footer-hint" id="dp-hint"></span>
             <div style="display:flex;gap:8px">
-              <button class="btn btn-sm" onclick="closePicker()">Cancel</button>
-              <button class="btn btn-sm btn-primary" onclick="applyPicker()">Apply</button>
+              <button class="btn btn-sm" onclick="cancelCustom()">Cancel</button>
+              <button class="btn btn-sm btn-primary" id="dp-apply" onclick="applyCustom()" disabled>Apply</button>
             </div>
           </div>
         </div>
@@ -185,8 +219,8 @@ tr:hover td{background:var(--bg-secondary)}
         <div>
           <div style="font-size:12px;color:var(--text-secondary);margin-bottom:6px">Group results by</div>
           <div class="group-toggle">
-            <button class="group-btn on" data-g="CLIENT" onclick="toggleGroup(this)">Client</button>
-            <button class="group-btn on" data-g="PROJECT" onclick="toggleGroup(this)">Project</button>
+            <button class="group-btn" data-g="CLIENT" onclick="toggleGroup(this)">Client</button>
+            <button class="group-btn" data-g="PROJECT" onclick="toggleGroup(this)">Project</button>
             <button class="group-btn" data-g="TAG" onclick="toggleGroup(this)">Tag</button>
           </div>
         </div>
@@ -213,53 +247,46 @@ tr:hover td{background:var(--bg-secondary)}
 </div>
 
 <script>
-// ── Constants & state ─────────────────────────────────────────────────
+// ── Config ──────────────────────────────────────────────────────────
 const MIN_DATE = '2026-01-01';
 const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const PRESETS = [
-  {label:'Today',       key:'today'},
-  {label:'Yesterday',   key:'yesterday'},
-  {label:'This week',   key:'thisWeek'},
-  {label:'Last week',   key:'lastWeek'},
-  {label:'This month',  key:'thisMonth'},
-  {label:'Last month',  key:'lastMonth'},
-  {label:'This year',   key:'thisYear'},
-  {label:'Custom',      key:'custom'},
+  {key:'today',      label:'Today'},
+  {key:'yesterday',  label:'Yesterday'},
+  {key:'thisWeek',   label:'This week'},
+  {key:'lastWeek',   label:'Last week'},
+  {key:'thisMonth',  label:'This month'},
+  {key:'lastMonth',  label:'Last month'},
+  {key:'thisYear',   label:'This year'},
+  {key:'custom',     label:'Custom range'},
 ];
-// shift unit per preset key — drives both the ‹ › arrows and the calendar nav
-const PRESET_UNIT = {today:'day',yesterday:'day',thisWeek:'week',lastWeek:'week',thisMonth:'month',lastMonth:'month',thisYear:'year',custom:'day'};
 
+// ── App state ───────────────────────────────────────────────────────
 let WORKSPACE_ID='', USER_ID='';
 let allProjects=[], allClients=[], allTags=[];
 let selectedClients=new Set(), selectedProjects=new Set(), selectedTags=new Set();
-let activeGroups=new Set(['CLIENT','PROJECT']);
+let activeGroups=new Set(); // no grouping by default
 let lastData=[], lastRows=[];
 let dateSortDir='desc';
 
-// Committed date range (what was last Applied or set by preset/shift)
+// Committed date range
 let dateFrom='', dateTo='', activePreset='thisWeek';
 
-// Picker in-progress state (separate from committed, so Cancel works)
-let pickerOpen=false;
-let pickFrom=null, pickEnd=null, pickingSecond=false;
-let pickerPreset='thisWeek';
-let calYear=new Date().getFullYear(), calMonth=new Date().getMonth();
-
 // URL params
-const _params = new URLSearchParams(window.location.search);
-const CLIENT_MODE = _params.get('client');
-const DATE_PARAM  = _params.get('date'); // e.g. lastWeek, thisMonth etc
+const _p = new URLSearchParams(window.location.search);
+const CLIENT_MODE = _p.get('client');
+const DATE_PARAM  = _p.get('date');
 
 function slugify(n){return(n||'').toLowerCase().trim().replace(/[^a-z0-9]+/g,'-').replace(/(^-|-$)/g,'');}
 
-// ── Proxy ──────────────────────────────────────────────────────────────
+// ── API ─────────────────────────────────────────────────────────────
 async function clockifyFetch(url,method='GET',body=null){
   const r=await fetch('/api/proxy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,method,body})});
   if(!r.ok){const t=await r.text();throw new Error(`API error (${r.status}): ${t}`);}
   return r.json();
 }
 
-// ── Helpers ────────────────────────────────────────────────────────────
+// ── Utils ───────────────────────────────────────────────────────────
 function hms(sec){const h=Math.floor(sec/3600),m=Math.floor((sec%3600)/60);return h+'h '+(m<10?'0':'')+m+'m';}
 function parseISODuration(iso){
   if(!iso)return 0;
@@ -272,240 +299,288 @@ function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 function showErr(id,msg){document.getElementById(id).innerHTML=msg?`<div class="error">${msg}</div>`:'';}
 
-// ── Preset → date range ────────────────────────────────────────────────
+// ── Preset → range ──────────────────────────────────────────────────
 function presetRange(key){
-  const now=new Date(), y=now.getFullYear(), mo=now.getMonth();
-  if(key==='today')     {return[isoDate(now),isoDate(now)];}
-  if(key==='yesterday') {const d=new Date(now);d.setDate(d.getDate()-1);return[isoDate(d),isoDate(d)];}
-  if(key==='thisWeek')  {const s=new Date(now);s.setDate(now.getDate()-((now.getDay()+6)%7));const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];}
-  if(key==='lastWeek')  {const s=new Date(now);s.setDate(now.getDate()-((now.getDay()+6)%7)-7);const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];}
-  if(key==='thisMonth') {return[`${y}-${String(mo+1).padStart(2,'0')}-01`,isoDate(new Date(y,mo+1,0))];}
+  const n=new Date(), y=n.getFullYear(), mo=n.getMonth();
+  if(key==='today')     return [isoDate(n), isoDate(n)];
+  if(key==='yesterday') {const d=new Date(n);d.setDate(d.getDate()-1);return[isoDate(d),isoDate(d)];}
+  if(key==='thisWeek')  {const s=new Date(n);s.setDate(n.getDate()-((n.getDay()+6)%7));const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];}
+  if(key==='lastWeek')  {const s=new Date(n);s.setDate(n.getDate()-((n.getDay()+6)%7)-7);const e=new Date(s);e.setDate(s.getDate()+6);return[isoDate(s),isoDate(e)];}
+  if(key==='thisMonth') return [`${y}-${String(mo+1).padStart(2,'0')}-01`, isoDate(new Date(y,mo+1,0))];
   if(key==='lastMonth') {const lm=mo===0?11:mo-1,ly=mo===0?y-1:y;return[`${ly}-${String(lm+1).padStart(2,'0')}-01`,isoDate(new Date(ly,lm+1,0))];}
-  if(key==='thisYear')  {return[`${y}-01-01`,`${y}-12-31`];}
+  if(key==='thisYear')  return [`${y}-01-01`, `${y}-12-31`];
   return null;
 }
 
-// ── Committed range helpers ────────────────────────────────────────────
-// Commits a range + preset label, updates the trigger button display
+// ── Commit a range ──────────────────────────────────────────────────
+// Committing immediately updates the trigger label. The report itself
+// only runs when "Run report" is clicked.
 function commitRange(from, to, preset){
   dateFrom = clamp(from);
   dateTo   = clamp(to);
-  activePreset = preset||'custom';
-  const p = PRESETS.find(p=>p.key===activePreset);
-  document.getElementById('dp-label').textContent = p?p.label:'Custom';
-  document.getElementById('dp-sublabel').textContent = (activePreset==='custom')?`${dateFrom} – ${dateTo}`:'';
+  activePreset = preset || 'custom';
+  const p = PRESETS.find(x=>x.key===activePreset);
+  document.getElementById('dp-label').textContent = p ? p.label : 'Custom range';
+  document.getElementById('dp-sub').textContent =
+    activePreset==='custom' ? `${dateFrom} – ${dateTo}` : `${dateFrom} – ${dateTo}`;
 }
 
-// Shift committed range ±1 unit — called by the ‹ › arrow buttons
-function shiftRange(dir, e){
-  if(e) e.stopPropagation();
-  if(!dateFrom||!dateTo) return;
-  const unit = PRESET_UNIT[activePreset]||'week';
-  let f=new Date(dateFrom+'T12:00:00'), t=new Date(dateTo+'T12:00:00');
-  if(unit==='day')  {f.setDate(f.getDate()+dir);t.setDate(t.getDate()+dir);}
-  if(unit==='week') {f.setDate(f.getDate()+dir*7);t.setDate(t.getDate()+dir*7);}
-  if(unit==='month'){f.setMonth(f.getMonth()+dir);f.setDate(1);t=new Date(f.getFullYear(),f.getMonth()+1,0);}
-  if(unit==='year') {f=new Date(f.getFullYear()+dir,0,1);t=new Date(f.getFullYear(),11,31);}
-  if(isoDate(f)<MIN_DATE) return;
-  commitRange(isoDate(f), isoDate(t), activePreset);
-}
+// ── Date picker state ───────────────────────────────────────────────
+let dpOpen = false;
+let calYear = new Date().getFullYear();
+let calMonth = new Date().getMonth();
+// Custom range picking
+let customStart = null; // first click
+let customEnd   = null; // second click
+let pickingCustom = false; // true after first click, waiting for second
 
-// ── Picker open/close ──────────────────────────────────────────────────
-function togglePicker(e){
-  e.stopPropagation();
-  pickerOpen?closePicker():openPicker();
-}
+// ── Open / close ────────────────────────────────────────────────────
 function openPicker(){
-  pickerOpen=true;
-  // Copy committed state into picker state
-  pickerPreset=activePreset;
-  pickFrom=dateFrom; pickEnd=dateTo; pickingSecond=false;
-  const d=new Date((pickFrom||isoDate(new Date()))+'T12:00:00');
-  calYear=d.getFullYear(); calMonth=d.getMonth();
-  buildPresetList();
+  dpOpen = true;
+  // Navigate calendar to show the current range start
+  if(dateFrom){
+    const d = new Date(dateFrom+'T12:00:00');
+    calYear = d.getFullYear(); calMonth = d.getMonth();
+  }
+  customStart = dateFrom || null;
+  customEnd   = dateTo   || null;
+  pickingCustom = false;
+  buildPresets();
   renderCal();
-  updateFooterRange();
+  showFooter(false);
   document.getElementById('dp-popup').classList.add('open');
 }
+
 function closePicker(){
-  pickerOpen=false;
+  dpOpen = false;
+  pickingCustom = false;
   document.getElementById('dp-popup').classList.remove('open');
 }
 
-// Clicking Apply commits the picker's in-progress selection
-function applyPicker(){
-  if(!pickFrom||!pickEnd){alert('Please select a complete date range.');return;}
-  const f=pickFrom<=pickEnd?pickFrom:pickEnd;
-  const t=pickFrom<=pickEnd?pickEnd:pickFrom;
-  commitRange(f,t,pickerPreset);
-  closePicker();
-}
-
-document.addEventListener('click', e=>{
-  if(pickerOpen&&!e.target.closest('.dp-wrap')){
+// Toggle on trigger click
+document.addEventListener('DOMContentLoaded', ()=>{
+  document.getElementById('dp-trigger').addEventListener('click', ()=>{
+    dpOpen ? closePicker() : openPicker();
+  });
+  // Close on outside click — but NOT if the click was inside the popup
+  document.addEventListener('click', e=>{
+    if(!dpOpen) return;
+    if(document.getElementById('dp-wrap').contains(e.target)) return;
     closePicker();
-  }
+  });
 });
 
-// ── Preset list ────────────────────────────────────────────────────────
-function buildPresetList(){
-  document.getElementById('dp-presets').innerHTML=PRESETS.map(p=>
-    `<div class="dp-preset${pickerPreset===p.key?' active':''}" onclick="selectPreset('${p.key}')">${p.label}</div>`
-  ).join('');
+// ── Preset list ─────────────────────────────────────────────────────
+function buildPresets(){
+  document.getElementById('dp-presets').innerHTML = PRESETS.map(p=>`
+    <div class="dp-preset${activePreset===p.key?' active':''}" onclick="selectPreset('${p.key}')">
+      ${p.label}
+    </div>`).join('');
 }
 
 function selectPreset(key){
-  pickerPreset=key;
-  if(key==='custom'){
-    // Don't auto-set dates — let user pick on calendar
-    pickFrom=dateFrom; pickEnd=dateTo; pickingSecond=false;
-    buildPresetList();
+  if(key === 'custom'){
+    // Switch to custom mode: keep existing dates as starting point,
+    // let user pick new ones on calendar. Don't close picker.
+    activePreset = 'custom';
+    customStart = dateFrom || null;
+    customEnd   = null;
+    pickingCustom = false;
+    buildPresets();
+    showFooter(true);
+    updateHint();
     renderCal();
     return;
   }
-  const[f,t]=presetRange(key);
-  pickFrom=clamp(f); pickEnd=clamp(t); pickingSecond=false;
-  // Navigate calendar to show the start of the selected range
-  const d=new Date(pickFrom+'T12:00:00');
-  calYear=d.getFullYear(); calMonth=d.getMonth();
-  buildPresetList();
-  renderCal();
-  updateFooterRange();
+  // Non-custom presets: apply immediately and close
+  const range = presetRange(key);
+  if(!range) return;
+  commitRange(range[0], range[1], key);
+  customStart = dateFrom; customEnd = dateTo;
+  pickingCustom = false;
+  closePicker();
 }
 
-// ── Calendar ───────────────────────────────────────────────────────────
-function calNav(dir){
-  calMonth+=dir;
-  if(calMonth>11){calMonth=0;calYear++;}
-  if(calMonth<0) {calMonth=11;calYear--;}
+// ── Calendar ─────────────────────────────────────────────────────────
+function calShift(dir){
+  calMonth += dir;
+  if(calMonth > 11){ calMonth = 0; calYear++; }
+  if(calMonth < 0) { calMonth = 11; calYear--; }
   renderCal();
 }
 
 function renderCal(){
-  document.getElementById('dp-cal-title').textContent=`${MONTHS[calMonth]} ${calYear}`;
-  document.getElementById('dp-prev').disabled=(calYear===2026&&calMonth===0);
+  const title = document.getElementById('dp-title');
+  const grid  = document.getElementById('dp-grid');
+  title.textContent = `${MONTHS[calMonth]} ${calYear}`;
 
-  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
-  const firstDow=(new Date(calYear,calMonth,1).getDay()+6)%7; // Mon=0
-  const prevDays=new Date(calYear,calMonth,0).getDate();
-  const today=isoDate(new Date());
+  // Disable back nav at Jan 2026
+  document.getElementById('dp-prev').disabled = (calYear===2026 && calMonth===0);
 
-  // Normalise the range so lo <= hi regardless of pick direction
-  const lo = pickFrom&&pickEnd ? (pickFrom<=pickEnd?pickFrom:pickEnd) : pickFrom;
-  const hi = pickFrom&&pickEnd ? (pickFrom<=pickEnd?pickEnd:pickFrom) : pickFrom;
+  const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+  const firstDow    = (new Date(calYear, calMonth, 1).getDay()+6)%7; // Mon=0
+  const prevMonthDays = new Date(calYear, calMonth, 0).getDate();
+  const today       = isoDate(new Date());
 
-  let html=['Mo','Tu','We','Th','Fr','Sa','Su'].map(d=>`<div class="dp-dow">${d}</div>`).join('');
+  // Normalise the displayed range (lo <= hi)
+  const lo = customStart && customEnd
+    ? (customStart <= customEnd ? customStart : customEnd)
+    : customStart;
+  const hi = customStart && customEnd
+    ? (customStart <= customEnd ? customEnd : customStart)
+    : customStart;
 
-  // Prev-month filler (disabled)
-  for(let i=firstDow-1;i>=0;i--)
-    html+=`<button class="dp-day other-month" disabled>${prevDays-i}</button>`;
+  let html = ['Mo','Tu','We','Th','Fr','Sa','Su']
+    .map(d=>`<div class="dp-dow">${d}</div>`).join('');
 
-  for(let d=1;d<=daysInMonth;d++){
-    const iso=`${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-    const disabled=iso<MIN_DATE;
-    const isStart=iso===lo;
-    const isEnd=iso===hi;
-    const inRange=lo&&hi&&iso>lo&&iso<hi;
-    let cls='dp-day';
-    if(isStart) cls+=' range-start';
-    if(isEnd)   cls+=' range-end';
-    if(inRange) cls+=' in-range';
-    if(iso===today&&!isStart&&!isEnd) cls+=' is-today';
-    if(disabled) html+=`<button class="${cls} other-month" disabled>${d}</button>`;
-    else         html+=`<button class="${cls}" onclick="dayClick('${iso}')">${d}</button>`;
+  // Prev-month fillers (greyed, unclickable)
+  for(let i=firstDow-1; i>=0; i--)
+    html += `<button class="dp-day other-month" disabled>${prevMonthDays-i}</button>`;
+
+  for(let d=1; d<=daysInMonth; d++){
+    const iso = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const disabled = iso < MIN_DATE;
+    const isStart  = lo && iso === lo;
+    const isEnd    = hi && iso === hi;
+    const inRange  = lo && hi && iso > lo && iso < hi;
+    let cls = 'dp-day';
+    if(isStart) cls += ' range-start';
+    if(isEnd)   cls += ' range-end';
+    if(inRange) cls += ' in-range';
+    if(iso === today && !isStart && !isEnd) cls += ' is-today';
+    if(disabled) cls += ' other-month';
+    html += `<button class="${cls}"${disabled?' disabled':''} onclick="dayClick('${iso}')">${d}</button>`;
   }
 
-  // Next-month filler
-  const used=firstDow+daysInMonth;
-  for(let d=1;d<=(used%7===0?0:7-(used%7));d++)
-    html+=`<button class="dp-day other-month" disabled>${d}</button>`;
+  // Next-month fillers
+  const used = firstDow + daysInMonth;
+  const tail = used % 7 === 0 ? 0 : 7 - (used%7);
+  for(let d=1; d<=tail; d++)
+    html += `<button class="dp-day other-month" disabled>${d}</button>`;
 
-  document.getElementById('dp-grid').innerHTML=html;
+  grid.innerHTML = html;
 }
 
 function dayClick(iso){
-  if(!pickingSecond){
-    // First click — set start, wait for end
-    pickFrom=iso; pickEnd=null; pickingSecond=true;
-    pickerPreset='custom';
-    buildPresetList();
-  } else {
-    // Second click — complete range
-    pickEnd=iso; pickingSecond=false;
+  // Non-custom presets: clicking a date switches to custom mode and starts picking
+  if(activePreset !== 'custom'){
+    activePreset = 'custom';
+    buildPresets();
+    showFooter(true);
   }
+
+  if(!pickingCustom){
+    // First click: set start, wait for end
+    customStart = iso;
+    customEnd   = null;
+    pickingCustom = true;
+  } else {
+    // Second click: complete the range
+    customEnd = iso;
+    pickingCustom = false;
+    document.getElementById('dp-apply').disabled = false;
+  }
+  updateHint();
   renderCal();
-  updateFooterRange();
 }
 
-function updateFooterRange(){
-  const lo=pickFrom&&pickEnd?(pickFrom<=pickEnd?pickFrom:pickEnd):pickFrom||'';
-  const hi=pickFrom&&pickEnd?(pickFrom<=pickEnd?pickEnd:pickFrom):pickEnd||'';
-  document.getElementById('dp-footer-range').textContent=
-    lo&&hi ? `${lo} – ${hi}` : lo ? `From ${lo} — select end date` : '';
+function updateHint(){
+  const el = document.getElementById('dp-hint');
+  if(pickingCustom){
+    el.textContent = `From ${customStart} — now click an end date`;
+  } else if(customStart && customEnd){
+    const lo = customStart<=customEnd?customStart:customEnd;
+    const hi = customStart<=customEnd?customEnd:customStart;
+    el.textContent = `${lo} – ${hi}`;
+  } else {
+    el.textContent = 'Click a start date';
+  }
 }
 
-// ── Boot ────────────────────────────────────────────────────────────────
+function showFooter(visible){
+  const f = document.getElementById('dp-footer');
+  f.classList.toggle('visible', visible);
+  if(visible){
+    document.getElementById('dp-apply').disabled = true;
+    updateHint();
+  }
+}
+
+function applyCustom(){
+  if(!customStart || !customEnd) return;
+  const lo = customStart<=customEnd?customStart:customEnd;
+  const hi = customStart<=customEnd?customEnd:customStart;
+  commitRange(lo, hi, 'custom');
+  closePicker();
+}
+
+function cancelCustom(){
+  // Revert picker state to last committed range and close
+  customStart = dateFrom; customEnd = dateTo;
+  activePreset = activePreset; // keep as-is
+  closePicker();
+}
+
+// ── Boot ─────────────────────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', async ()=>{
-  // DATE_PARAM from URL (?date=lastWeek etc) takes priority, then default thisWeek
   const startPreset = (DATE_PARAM && PRESETS.find(p=>p.key===DATE_PARAM)) ? DATE_PARAM : 'thisWeek';
-  const[f,t]=presetRange(startPreset);
-  commitRange(f, t, startPreset);
-  pickFrom=dateFrom; pickEnd=dateTo;
+  const range = presetRange(startPreset);
+  if(range) commitRange(range[0], range[1], startPreset);
 
   try{
-    const me=await clockifyFetch('https://api.clockify.me/api/v1/user');
-    USER_ID=me.id;
-    const ws=await clockifyFetch('https://api.clockify.me/api/v1/workspaces');
+    const me = await clockifyFetch('https://api.clockify.me/api/v1/user');
+    USER_ID = me.id;
+    const ws = await clockifyFetch('https://api.clockify.me/api/v1/workspaces');
     if(!ws.length) throw new Error('No workspaces found.');
-    WORKSPACE_ID=ws[0].id;
+    WORKSPACE_ID = ws[0].id;
     await loadFilters();
   }catch(e){
     hide('loading-panel');
-    showErr('main-error',`Could not connect to Clockify: ${e.message}. Check CLOCKIFY_API_KEY is set in Netlify environment variables.`);
+    showErr('main-error', `Could not connect: ${e.message}. Check CLOCKIFY_API_KEY is set in Netlify environment variables.`);
   }
 });
 
-// ── Filters ─────────────────────────────────────────────────────────────
+// ── Filters ──────────────────────────────────────────────────────────
 async function loadFilters(){
   try{
-    const[pr,cl,tg]=await Promise.all([
+    const [pr,cl,tg] = await Promise.all([
       clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/projects?page-size=500&archived=false`),
       clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/clients?page-size=500`),
       clockifyFetch(`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/tags?page-size=500&archived=false`),
     ]);
-    allProjects=Array.isArray(pr)?pr:[];
-    allClients=Array.isArray(cl)?cl:[];
-    allTags=Array.isArray(tg)?tg:[];
+    allProjects = Array.isArray(pr)?pr:[];
+    allClients  = Array.isArray(cl)?cl:[];
+    allTags     = Array.isArray(tg)?tg:[];
 
     if(CLIENT_MODE){
-      const matched=allClients.find(c=>slugify(c.name)===CLIENT_MODE);
-      if(!matched){hide('loading-panel');showErr('main-error',`No client matching "${CLIENT_MODE}" found.`);return;}
-      selectedClients=new Set([matched.id]);
-      allProjects=allProjects.filter(p=>p.clientId===matched.id);
+      const matched = allClients.find(c=>slugify(c.name)===CLIENT_MODE);
+      if(!matched){ hide('loading-panel'); showErr('main-error',`No client matching "${CLIENT_MODE}" found.`); return; }
+      selectedClients = new Set([matched.id]);
+      allProjects = allProjects.filter(p=>p.clientId===matched.id);
       document.getElementById('client-filter-block').style.display='none';
-      const cb=document.querySelector('.group-btn[data-g="CLIENT"]');
-      if(cb){cb.style.display='none';activeGroups.delete('CLIENT');cb.classList.remove('on');}
-      document.querySelector('h1').textContent=`${matched.name} — time report`;
-      document.querySelector('.subtitle').textContent='Filtered to your projects only';
-    }else{
-      renderMultiSelect('client-list',allClients,'client',selectedClients);
+      const cb = document.querySelector('.group-btn[data-g="CLIENT"]');
+      if(cb){ cb.style.display='none'; activeGroups.delete('CLIENT'); cb.classList.remove('on'); }
+      document.querySelector('h1').textContent = `${matched.name} — time report`;
+      document.querySelector('.subtitle').textContent = 'Filtered to your projects only';
+    } else {
+      renderMultiSelect('client-list', allClients, 'client', selectedClients);
     }
-    renderMultiSelect('project-list',allProjects,'project',selectedProjects);
-    renderMultiSelect('tag-list',allTags,'tag',selectedTags);
+    renderMultiSelect('project-list', allProjects, 'project', selectedProjects);
+    renderMultiSelect('tag-list', allTags, 'tag', selectedTags);
     hide('loading-panel');
     show('filter-panel');
-  }catch(e){hide('loading-panel');showErr('main-error',e.message);}
+  }catch(e){ hide('loading-panel'); showErr('main-error', e.message); }
 }
 
 function renderMultiSelect(elId,items,type,selSet){
-  const el=document.getElementById(elId);
-  if(!items.length){el.innerHTML='<div class="ms-item" style="color:var(--text-secondary)">None found</div>';return;}
-  el.innerHTML=items.map(i=>`<label class="ms-item"><input type="checkbox" ${selSet.has(i.id)?'checked':''} onchange="toggleFilter('${type}','${i.id}',this)">${i.name}</label>`).join('');
+  const el = document.getElementById(elId);
+  if(!items.length){ el.innerHTML='<div class="ms-item" style="color:var(--text-secondary)">None found</div>'; return; }
+  el.innerHTML = items.map(i=>`<label class="ms-item"><input type="checkbox" ${selSet.has(i.id)?'checked':''} onchange="toggleFilter('${type}','${i.id}',this)">${i.name}</label>`).join('');
 }
 
 function toggleFilter(type,id,cb){
   const map={client:selectedClients,project:selectedProjects,tag:selectedTags};
-  if(cb.checked)map[type].add(id);else map[type].delete(id);
+  if(cb.checked) map[type].add(id); else map[type].delete(id);
   renderAllTags();
 }
 
@@ -516,25 +591,25 @@ function renderAllTags(){
 }
 
 function renderTagBar(elId,set,items,type){
-  document.getElementById(elId).innerHTML=[...set].map(id=>{
-    const name=(items.find(i=>i.id===id)||{name:id}).name;
+  document.getElementById(elId).innerHTML = [...set].map(id=>{
+    const name = (items.find(i=>i.id===id)||{name:id}).name;
     return `<span class="tag">${name}<button onclick="removeFilter('${type}','${id}')">×</button></span>`;
   }).join('');
 }
 
 function removeFilter(type,id){
   const map={client:[selectedClients,'client-list'],project:[selectedProjects,'project-list'],tag:[selectedTags,'tag-list']};
-  const[set,listId]=map[type];
-  set.delete(id);renderAllTags();
+  const [set,listId] = map[type];
+  set.delete(id); renderAllTags();
   document.getElementById(listId).querySelectorAll('input[type=checkbox]').forEach(cb=>{
-    if(cb.getAttribute('onchange').includes(`'${id}'`))cb.checked=false;
+    if(cb.getAttribute('onchange').includes(`'${id}'`)) cb.checked=false;
   });
 }
 
 function clearFilters(){
-  if(!CLIENT_MODE)selectedClients.clear();
-  selectedProjects.clear();selectedTags.clear();
-  if(!CLIENT_MODE)renderMultiSelect('client-list',allClients,'client',selectedClients);
+  if(!CLIENT_MODE) selectedClients.clear();
+  selectedProjects.clear(); selectedTags.clear();
+  if(!CLIENT_MODE) renderMultiSelect('client-list',allClients,'client',selectedClients);
   renderMultiSelect('project-list',allProjects,'project',selectedProjects);
   renderMultiSelect('tag-list',allTags,'tag',selectedTags);
   renderAllTags();
@@ -542,36 +617,36 @@ function clearFilters(){
 }
 
 function toggleGroup(btn){
-  const g=btn.dataset.g;
-  if(activeGroups.has(g))activeGroups.delete(g);else activeGroups.add(g);
+  const g = btn.dataset.g;
+  if(activeGroups.has(g)) activeGroups.delete(g); else activeGroups.add(g);
   btn.classList.toggle('on');
-  if(lastRows.length)renderCurrentTable();
+  if(lastRows.length) renderCurrentTable();
 }
 
-// ── Fetching ─────────────────────────────────────────────────────────────
+// ── Fetching ─────────────────────────────────────────────────────────
 function splitIntoChunks(from,to){
   const chunks=[];
-  let s=new Date(from+'T12:00:00Z'), e=new Date(to+'T12:00:00Z');
+  let s=new Date(from+'T12:00:00'), e=new Date(to+'T12:00:00');
   while(s<=e){
-    let ce=new Date(s);ce.setUTCDate(ce.getUTCDate()+29);
-    if(ce>e)ce=new Date(e);
+    let ce=new Date(s); ce.setDate(ce.getDate()+29);
+    if(ce>e) ce=new Date(e);
     chunks.push([isoDate(s),isoDate(ce)]);
-    s=new Date(ce);s.setUTCDate(s.getUTCDate()+1);
+    s=new Date(ce); s.setDate(s.getDate()+1);
   }
   return chunks;
 }
 
 async function fetchAllTimeEntries(from,to){
   let all=[];
-  for(const[f,t]of splitIntoChunks(from,to)){
+  for(const[f,t] of splitIntoChunks(from,to)){
     let page=1;
     while(true){
       const url=`https://api.clockify.me/api/v1/workspaces/${WORKSPACE_ID}/user/${USER_ID}/time-entries`
         +`?start=${f}T00:00:00Z&end=${t}T23:59:59Z&page-size=1000&page=${page}&hydrated=true`;
       const data=await clockifyFetch(url);
-      if(!Array.isArray(data)||!data.length)break;
+      if(!Array.isArray(data)||!data.length) break;
       all=all.concat(data);
-      if(data.length<1000)break;
+      if(data.length<1000) break;
       page++;
     }
   }
@@ -580,96 +655,109 @@ async function fetchAllTimeEntries(from,to){
 
 function normalizeEntries(raw){
   return raw.map(e=>({
-    timeInterval:e.timeInterval,description:e.description,
-    clientName:e.project?.clientName||'',projectName:e.project?.name||'',
-    clientId:e.project?.clientId||'',projectId:e.projectId||'',
+    timeInterval:e.timeInterval, description:e.description,
+    clientName:e.project?.clientName||'', projectName:e.project?.name||'',
+    clientId:e.project?.clientId||'', projectId:e.projectId||'',
     tags:(e.tags||[]).map(t=>({id:t.id,name:t.name})),
   })).filter(e=>{
-    if(selectedClients.size&&!selectedClients.has(e.clientId))return false;
-    if(selectedProjects.size&&!selectedProjects.has(e.projectId))return false;
-    if(selectedTags.size&&!e.tags.some(t=>selectedTags.has(t.id)))return false;
+    if(selectedClients.size && !selectedClients.has(e.clientId)) return false;
+    if(selectedProjects.size && !selectedProjects.has(e.projectId)) return false;
+    if(selectedTags.size && !e.tags.some(t=>selectedTags.has(t.id))) return false;
     return true;
   });
 }
 
 async function runReport(){
-  if(!dateFrom||!dateTo){showErr('main-error','Select a date range.');return;}
-  showErr('main-error','');show('loading-panel');hide('results-panel');
+  if(!dateFrom||!dateTo){ showErr('main-error','Select a date range.'); return; }
+  showErr('main-error',''); show('loading-panel'); hide('results-panel');
   try{
-    const raw=await fetchAllTimeEntries(dateFrom,dateTo);
-    lastData=normalizeEntries(raw);
+    const raw = await fetchAllTimeEntries(dateFrom, dateTo);
+    lastData = normalizeEntries(raw);
     hide('loading-panel');
-    renderResults(lastData,dateFrom,dateTo);
-  }catch(e){hide('loading-panel');showErr('main-error',e.message);}
+    renderResults(lastData, dateFrom, dateTo);
+  }catch(e){ hide('loading-panel'); showErr('main-error', e.message); }
 }
 
-// ── Rendering ─────────────────────────────────────────────────────────────
+// ── Rendering ─────────────────────────────────────────────────────────
 function renderResults(entries,from,to){
   let totalSec=0;
-  entries.forEach(e=>{totalSec+=parseISODuration(e.timeInterval?.duration);});
-  document.getElementById('results-title').textContent=`${entries.length} entries · ${from} – ${to}`;
+  entries.forEach(e=>{ totalSec+=parseISODuration(e.timeInterval?.duration); });
+  document.getElementById('results-title').textContent = `${entries.length} entries · ${from} – ${to}`;
   document.getElementById('stat-row').innerHTML=`
     <div class="stat"><div class="stat-label">Total time</div><div class="stat-value">${hms(totalSec)}</div></div>
     <div class="stat"><div class="stat-label">Entries</div><div class="stat-value">${entries.length}</div></div>`;
   if(!entries.length){
     document.getElementById('table-area').innerHTML='<div class="empty">No entries found for this period and filter combination.</div>';
-    show('results-panel');return;
+    show('results-panel'); return;
   }
-  lastRows=entries.map(e=>({
-    Date:e.timeInterval?.start?.split('T')[0]||'',
-    Client:e.clientName||'—',Project:e.projectName||'—',
-    Description:e.description||'—',
-    Tags:(e.tags||[]).map(t=>t.name).join(', ')||'—',
-    Duration:hms(parseISODuration(e.timeInterval?.duration)),
-    'Duration (h)':((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2),
+  lastRows = entries.map(e=>({
+    Date: e.timeInterval?.start?.split('T')[0]||'',
+    Client: e.clientName||'—',
+    Project: e.projectName||'—',
+    Description: e.description||'—',
+    Tags: (e.tags||[]).map(t=>t.name).join(', ')||'—',
+    Duration: hms(parseISODuration(e.timeInterval?.duration)),
+    'Duration (h)': ((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2),
   }));
   renderCurrentTable();
   show('results-panel');
 }
 
-function renderCurrentTable(){renderTable(groupRows(lastRows));}
+function renderCurrentTable(){ renderTable(groupRows(lastRows)); }
 
 function groupRows(rows){
   if(!activeGroups.size){
-    return[...rows].sort((a,b)=>dateSortDir==='asc'?a.Date.localeCompare(b.Date):b.Date.localeCompare(a.Date));
+    return [...rows].sort((a,b)=>dateSortDir==='asc'
+      ? a.Date.localeCompare(b.Date)
+      : b.Date.localeCompare(a.Date));
   }
   const groups={};
   rows.forEach(r=>{
-    const key=[...activeGroups].map(g=>g==='CLIENT'?r.Client:g==='PROJECT'?r.Project:r.Tags).join(' · ');
-    if(!groups[key])groups[key]={Group:key,_count:0,_sec:0};
-    groups[key]._count++;groups[key]._sec+=parseFloat(r['Duration (h)'])||0;
+    const key = [...activeGroups].map(g=>
+      g==='CLIENT'?r.Client : g==='PROJECT'?r.Project : r.Tags
+    ).join(' · ');
+    if(!groups[key]) groups[key]={Group:key,_count:0,_sec:0};
+    groups[key]._count++;
+    groups[key]._sec += parseFloat(r['Duration (h)'])||0;
   });
-  return Object.values(groups).map(v=>({Group:v.Group,Entries:v._count,Duration:hms(Math.round(v._sec*3600)),'Duration (h)':v._sec.toFixed(2)}));
+  return Object.values(groups).map(v=>({
+    Group:v.Group, Entries:v._count,
+    Duration:hms(Math.round(v._sec*3600)), 'Duration (h)':v._sec.toFixed(2),
+  }));
 }
 
-function toggleDateSort(){dateSortDir=dateSortDir==='asc'?'desc':'asc';renderCurrentTable();}
+function toggleDateSort(){ dateSortDir=dateSortDir==='asc'?'desc':'asc'; renderCurrentTable(); }
 
 function renderTable(rows){
-  if(!rows.length)return;
-  const cols=Object.keys(rows[0]);
-  const ungrouped=cols.includes('Date');
+  if(!rows.length) return;
+  const cols = Object.keys(rows[0]);
+  const ungrouped = cols.includes('Date');
   document.getElementById('table-area').innerHTML=`<table>
-    <thead><tr>${cols.map(c=>c==='Date'&&ungrouped
-      ?`<th style="cursor:pointer;user-select:none" onclick="toggleDateSort()">Date ${dateSortDir==='asc'?'↑':'↓'}</th>`
-      :`<th>${c}</th>`).join('')}</tr></thead>
+    <thead><tr>${cols.map(c=>
+      c==='Date'&&ungrouped
+        ? `<th style="cursor:pointer;user-select:none" onclick="toggleDateSort()">Date ${dateSortDir==='asc'?'↑':'↓'}</th>`
+        : `<th>${c}</th>`
+    ).join('')}</tr></thead>
     <tbody>${rows.map(r=>`<tr>${cols.map(c=>{
       const v=r[c]??'';
       return(c==='Duration'||c==='Duration (h)')?`<td class="dur">${v}</td>`:`<td>${v}</td>`;
     }).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
-// ── Export ──────────────────────────────────────────────────────────────
+// ── Export ────────────────────────────────────────────────────────────
 function exportXLSX(){
-  if(!lastData.length){alert('Run a report first.');return;}
-  const rows=lastData.map(e=>({
-    Client:e.clientName||'',Project:e.projectName||'',Description:e.description||'',
-    Date:e.timeInterval?.start?.split('T')[0]||'',
-    Time:parseFloat(((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2)),
+  if(!lastData.length){ alert('Run a report first.'); return; }
+  const rows = lastData.map(e=>({
+    Client: e.clientName||'',
+    Project: e.projectName||'',
+    Description: e.description||'',
+    Date: e.timeInterval?.start?.split('T')[0]||'',
+    Time: parseFloat(((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2)),
   }));
-  const ws=XLSX.utils.json_to_sheet(rows);
-  const wb=XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb,ws,'Clockify');
-  XLSX.writeFile(wb,'clockify-report.xlsx');
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Clockify');
+  XLSX.writeFile(wb, 'clockify-report.xlsx');
 }
 </script>
 </body>
