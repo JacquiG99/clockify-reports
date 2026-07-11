@@ -84,7 +84,6 @@ tr:hover td{background:var(--bg-secondary)}
 <body>
 <div class="wrap">
   <h1>Clockify reports</h1>
-
   <div id="loading-panel" class="loading"><span class="spin"></span> Loading your workspace...</div>
   <div id="main-error"></div>
 
@@ -276,8 +275,10 @@ async function loadFilters(){
       document.getElementById('client-filter-block').style.display='none';
       const cb = document.querySelector('.group-btn[data-g="CLIENT"]');
       if(cb){ cb.style.display='none'; activeGroups.delete('CLIENT'); cb.classList.remove('on'); }
-      document.querySelector('h1').textContent = `${matched.name} — time report`;
-      document.querySelector('.subtitle').textContent = 'Filtered to your projects only';
+      const h1 = document.querySelector('h1');
+      const sub = document.querySelector('.subtitle');
+      if(h1) h1.textContent = `${matched.name} — time report`;
+      if(sub) sub.textContent = 'Filtered to your projects only';
     } else {
       renderMultiSelect('client-list', allClients, 'client', selectedClients);
     }
@@ -399,7 +400,8 @@ async function runReport(){
 function renderResults(entries,from,to){
   let totalSec=0;
   entries.forEach(e=>{ totalSec+=parseISODuration(e.timeInterval?.duration); });
-  document.getElementById('results-title').textContent = `${entries.length} entries · ${fmtDate(from)} – ${fmtDate(to)}`;
+  const rt = document.getElementById('results-title');
+  if(rt) rt.textContent = `${entries.length} entries · ${fmtDate(from)} – ${fmtDate(to)}`;
   document.getElementById('stat-row').innerHTML=`
     <div class="stat"><div class="stat-label">Total time</div><div class="stat-value">${hms(totalSec)}</div></div>
     <div class="stat"><div class="stat-label">Entries</div><div class="stat-value">${entries.length}</div></div>`;
