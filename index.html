@@ -8,19 +8,19 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 :root{
-  --bg-primary:#ffffff;--bg-secondary:#F4F3EF;--bg-tertiary:#EDEBE5;
-  --text-primary:#1A1A18;--text-secondary:#5F5E5A;--text-tertiary:#888780;
-  --border-tertiary:rgba(0,0,0,.1);--border-secondary:rgba(0,0,0,.2);
+  --bg-primary:#ffffff;--bg-secondary:#F7FBFD;--bg-tertiary:#EAF4FA;
+  --text-primary:#0D1B26;--text-secondary:#4A6070;--text-tertiary:#7A97A8;
+  --border-tertiary:rgba(0,118,174,.12);--border-secondary:rgba(0,118,174,.25);
   --radius-md:8px;--radius-lg:12px;
-  --green:#1D9E75;--green-dark:#0F6E56;--green-light:#E1F5EE;
+  --green:#0076AE;--green-dark:#005A84;--green-light:#E0F0F9;
   --red-light:#FCEBEB;--red-border:#F7C1C1;--red-text:#793F3F;
 }
 @media(prefers-color-scheme:dark){
   :root{
-    --bg-primary:#1E1E1C;--bg-secondary:#2A2A27;--bg-tertiary:#333330;
-    --text-primary:#F1EFE8;--text-secondary:#B4B2A9;--text-tertiary:#888780;
-    --border-tertiary:rgba(255,255,255,.12);--border-secondary:rgba(255,255,255,.22);
-    --green-light:#08504133;
+    --bg-primary:#0D1B26;--bg-secondary:#112333;--bg-tertiary:#0A1520;
+    --text-primary:#E8F4FB;--text-secondary:#8FB5C8;--text-tertiary:#5A8099;
+    --border-tertiary:rgba(0,118,174,.2);--border-secondary:rgba(0,118,174,.4);
+    --green-light:#0076AE33;
   }
 }
 *{box-sizing:border-box;margin:0;padding:0}
@@ -67,7 +67,7 @@ tr:hover td{background:var(--bg-secondary)}
 .group-toggle{display:flex;gap:6px;flex-wrap:wrap}
 .group-btn{padding:5px 10px;border:0.5px solid var(--border-secondary);border-radius:var(--radius-md);font-size:12px;cursor:pointer;background:transparent;color:var(--text-secondary);font-family:inherit}
 .group-btn.on{background:var(--green-light);border-color:var(--green);color:var(--green-dark);font-weight:500}
-.dur{font-variant-numeric:tabular-nums;text-align:right}
+.dur{font-variant-numeric:tabular-nums;text-align:center}
 .footer-note{font-size:11px;color:var(--text-tertiary);margin-top:2rem;text-align:center}
 
 /* ── Date pills ─────────────────────────────────────── */
@@ -193,6 +193,7 @@ function parseISODuration(iso){
   return m?Math.round(parseFloat(m[1]||0)*3600+parseFloat(m[2]||0)*60+parseFloat(m[3]||0)):0;
 }
 function isoDate(d){return d.toISOString().split('T')[0];}
+function fmtDate(iso){if(!iso)return'';const[y,m,d]=iso.split('-');return`${d}-${m}-${y}`;}
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
 function showErr(id,msg){document.getElementById(id).innerHTML=msg?`<div class="error">${msg}</div>`:'';}
@@ -401,7 +402,7 @@ async function runReport(){
 function renderResults(entries,from,to){
   let totalSec=0;
   entries.forEach(e=>{ totalSec+=parseISODuration(e.timeInterval?.duration); });
-  document.getElementById('results-title').textContent = `${entries.length} entries · ${from} – ${to}`;
+  document.getElementById('results-title').textContent = `${entries.length} entries · ${fmtDate(from)} – ${fmtDate(to)}`;
   document.getElementById('stat-row').innerHTML=`
     <div class="stat"><div class="stat-label">Total time</div><div class="stat-value">${hms(totalSec)}</div></div>
     <div class="stat"><div class="stat-label">Entries</div><div class="stat-value">${entries.length}</div></div>`;
@@ -410,7 +411,8 @@ function renderResults(entries,from,to){
     show('results-panel'); return;
   }
   lastRows = entries.map(e=>({
-    Date: e.timeInterval?.start?.split('T')[0]||'',
+    Date: fmtDate(e.timeInterval?.start?.split('T')[0]||''),
+    _isoDate: e.timeInterval?.start?.split('T')[0]||'',
     Client: e.clientName||'—',
     Project: e.projectName||'—',
     Description: e.description||'—',
@@ -427,8 +429,8 @@ function renderCurrentTable(){ renderTable(groupRows(lastRows)); }
 function groupRows(rows){
   if(!activeGroups.size){
     return [...rows].sort((a,b)=>dateSortDir==='asc'
-      ? a.Date.localeCompare(b.Date)
-      : b.Date.localeCompare(a.Date));
+      ? (a._isoDate||'').localeCompare(b._isoDate||'')
+      : (b._isoDate||'').localeCompare(a._isoDate||''));
   }
   const groups={};
   rows.forEach(r=>{
@@ -449,7 +451,7 @@ function toggleDateSort(){ dateSortDir=dateSortDir==='asc'?'desc':'asc'; renderC
 
 function renderTable(rows){
   if(!rows.length) return;
-  const cols = Object.keys(rows[0]);
+  const cols = Object.keys(rows[0]).filter(c=>c!=='_isoDate');
   const ungrouped = cols.includes('Date');
   document.getElementById('table-area').innerHTML=`<table>
     <thead><tr>${cols.map(c=>
@@ -459,7 +461,8 @@ function renderTable(rows){
     ).join('')}</tr></thead>
     <tbody>${rows.map(r=>`<tr>${cols.map(c=>{
       const v=r[c]??'';
-      return(c==='Duration'||c==='Duration (h)')?`<td class="dur">${v}</td>`:`<td>${v}</td>`;
+      if(c==='Duration'||c==='Duration (h)'||c==='Entries') return `<td class="dur">${v}</td>`;
+      return `<td>${v}</td>`;
     }).join('')}</tr>`).join('')}</tbody></table>`;
 }
 
@@ -470,7 +473,8 @@ function exportXLSX(){
     Client: e.clientName||'',
     Project: e.projectName||'',
     Description: e.description||'',
-    Date: e.timeInterval?.start?.split('T')[0]||'',
+    Date: fmtDate(e.timeInterval?.start?.split('T')[0]||''),
+    _isoDate: e.timeInterval?.start?.split('T')[0]||'',
     Time: parseFloat(((parseISODuration(e.timeInterval?.duration))/3600).toFixed(2)),
   }));
   const ws = XLSX.utils.json_to_sheet(rows);
