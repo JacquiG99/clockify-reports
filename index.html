@@ -84,6 +84,7 @@ tr:hover td{background:var(--bg-secondary)}
 <body>
 <div class="wrap">
   <h1>Clockify reports</h1>
+
   <div id="loading-panel" class="loading"><span class="spin"></span> Loading your workspace...</div>
   <div id="main-error"></div>
 
@@ -150,6 +151,7 @@ tr:hover td{background:var(--bg-secondary)}
     <div class="card">
       <div class="results-header">
         <div class="results-title" id="results-title">Results</div>
+        <button class="btn btn-sm" onclick="copyTable()" id="copy-btn"><i class="ti ti-clipboard"></i> Copy table</button>
         <button class="btn btn-sm" onclick="exportXLSX()"><i class="ti ti-file"></i> Export to Excel</button>
       </div>
       <div class="stat-row" id="stat-row"></div>
@@ -188,7 +190,12 @@ function parseISODuration(iso){
   const m=iso.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:([\d.]+)S)?/);
   return m?Math.round(parseFloat(m[1]||0)*3600+parseFloat(m[2]||0)*60+parseFloat(m[3]||0)):0;
 }
-function isoDate(d){return d.toISOString().split('T')[0];}
+function isoDate(d){
+  // Use local time methods instead of toISOString() which converts to UTC
+  // and can shift the date by a day for timezones ahead of UTC (e.g. AEST).
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+  return `${y}-${m}-${day}`;
+}
 function fmtDate(iso){if(!iso)return'';const[y,m,d]=iso.split('-');return`${d}-${m}-${y}`;}
 function show(id){document.getElementById(id).style.display='block';}
 function hide(id){document.getElementById(id).style.display='none';}
@@ -470,6 +477,27 @@ function renderTable(rows){
 }
 
 // ── Export ────────────────────────────────────────────────────────────
+function copyTable(){
+  const table = document.querySelector('#table-area table');
+  if(!table){ alert('Run a report first.'); return; }
+
+  // Build tab-separated text from the rendered table (headers + rows)
+  const rows = [...table.querySelectorAll('tr')];
+  const text = rows.map(row =>
+    [...row.querySelectorAll('th,td')].map(cell => cell.textContent.trim()).join('	')
+  ).join('
+');
+
+  navigator.clipboard.writeText(text).then(()=>{
+    const btn = document.getElementById('copy-btn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<i class="ti ti-check"></i> Copied!';
+    btn.style.color = 'var(--green)';
+    btn.style.borderColor = 'var(--green)';
+    setTimeout(()=>{ btn.innerHTML = original; btn.style.color=''; btn.style.borderColor=''; }, 2000);
+  }).catch(()=> alert('Copy failed — try selecting and copying the table manually.'));
+}
+
 function exportXLSX(){
   if(!lastData.length){ alert('Run a report first.'); return; }
   const rows = lastData.map(e=>({
