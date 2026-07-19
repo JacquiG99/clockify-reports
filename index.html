@@ -84,6 +84,7 @@ tr:hover td{background:var(--bg-secondary)}
 <body>
 <div class="wrap">
   <h1>Clockify reports</h1>
+  <p class="subtitle">Filter, cross-filter, and export your time data</p>
 
   <div id="loading-panel" class="loading"><span class="spin"></span> Loading your workspace...</div>
   <div id="main-error"></div>
@@ -158,6 +159,8 @@ tr:hover td{background:var(--bg-secondary)}
       <div class="table-wrap"><div id="table-area"></div></div>
     </div>
   </div>
+
+  <p class="footer-note">Your data is fetched live from Clockify and never stored by this app</p>
 </div>
 
 <script>
@@ -480,14 +483,11 @@ function renderTable(rows){
 function copyTable(){
   const table = document.querySelector('#table-area table');
   if(!table){ alert('Run a report first.'); return; }
-
-  // Build tab-separated text from the rendered table (headers + rows)
   const rows = [...table.querySelectorAll('tr')];
-  const text = rows.map(row =>
-    [...row.querySelectorAll('th,td')].map(cell => cell.textContent.trim()).join('	')
-  ).join('
-');
-
+  const lines = rows.map(row =>
+    [...row.querySelectorAll('th,td')].map(cell => cell.textContent.trim()).join(String.fromCharCode(9))
+  );
+  const text = lines.join(String.fromCharCode(10));
   navigator.clipboard.writeText(text).then(()=>{
     const btn = document.getElementById('copy-btn');
     const original = btn.innerHTML;
